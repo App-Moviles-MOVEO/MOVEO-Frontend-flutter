@@ -1,0 +1,27 @@
+/// Fallas de dominio expuestas a la capa de presentación.
+sealed class Failure {
+  final String message;
+
+  const Failure(this.message);
+
+  @override
+  String toString() => message;
+}
+
+class ServerFailure extends Failure {
+  final int? statusCode;
+
+  const ServerFailure(super.message, {this.statusCode});
+}
+
+class NetworkFailure extends Failure {
+  const NetworkFailure([super.message = 'Error de conexión']);
+}
+
+class AuthFailure extends Failure {
+  const AuthFailure([super.message = 'Sesión expirada']);
+}
+
+class ValidationFailure extends Failure {
+  const ValidationFailure(super.message);
+}

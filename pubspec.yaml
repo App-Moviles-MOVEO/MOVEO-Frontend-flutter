@@ -1,0 +1,67 @@
+name: wheelspe_provider
+description: "WheelsPe Provider — app para propietarios de vehiculos (alquiler P2P y carpooling, Peru)."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # State management
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+
+  # Navigation
+  go_router: ^14.0.0
+
+  # Network
+  dio: ^5.4.0
+
+  # Storage
+  flutter_secure_storage: ^9.2.2
+  shared_preferences: ^2.3.0
+
+  # Media
+  image_picker: ^1.1.2
+  cached_network_image: ^3.3.1
+  camera: ^0.11.0
+
+  # Maps
+  google_maps_flutter: ^2.6.1
+
+  # i18n / formatting
+  intl: ^0.20.2
+
+  # UI
+  fl_chart: ^0.68.0
+  shimmer: ^3.0.0
+  flutter_svg: ^2.0.10+1
+
+  # Notifications
+  flutter_local_notifications: ^17.2.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  generate: true
+
+  fonts:
+    - family: DM Sans
+      fonts:
+        - asset: assets/fonts/DMSans-Regular.ttf
+        - asset: assets/fonts/DMSans-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/DMSans-Bold.ttf
+          weight: 700
+    - family: DM Serif Display
+      fonts:
+        - asset: assets/fonts/DMSerifDisplay-Regular.ttf

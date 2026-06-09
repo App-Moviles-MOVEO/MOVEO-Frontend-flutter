@@ -1,0 +1,365 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:wheelspe_provider/core/constants/app_colors.dart';
+import 'package:wheelspe_provider/core/constants/app_text_styles.dart';
+import 'package:wheelspe_provider/core/utils/currency_formatter.dart';
+import 'package:wheelspe_provider/core/utils/date_formatter.dart';
+import 'package:wheelspe_provider/features/fleet/data/reservation_model.dart';
+import 'package:wheelspe_provider/features/fleet/presentation/fleet_providers.dart';
+import 'package:wheelspe_provider/l10n/generated/app_localizations.dart';
+import 'package:wheelspe_provider/shared/widgets/avatar_widget.dart';
+import 'package:wheelspe_provider/shared/widgets/error_state.dart';
+import 'package:wheelspe_provider/shared/widgets/rating_stars.dart';
+import 'package:wheelspe_provider/shared/widgets/shimmer_card.dart';
+import 'package:wheelspe_provider/shared/widgets/snackbars.dart';
+import 'package:wheelspe_provider/shared/widgets/wheelspe_button.dart';
+import 'package:wheelspe_provider/shared/widgets/wheelspe_card.dart';
+
+class ReservationDetailScreen extends ConsumerWidget {
+  final String reservationId;
+
+  const ReservationDetailScreen({super.key, required this.reservationId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final reservationAsync =
+        ref.watch(reservationDetailProvider(reservationId));
+
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.reservationDetailTitle)),
+      body: reservationAsync.when(
+        loading: () => const Padding(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            children: [
+              ShimmerCard(height: 110),
+              SizedBox(height: 12),
+              ShimmerCard(height: 180),
+            ],
+          ),
+        ),
+        error: (e, _) => ErrorState(
+          onRetry: () =>
+              ref.invalidate(reservationDetailProvider(reservationId)),
+        ),
+        data: (reservation) => _ReservationDetailBody(reservation: reservation),
+      ),
+    );
+  }
+}
+
+class _ReservationDetailBody extends ConsumerStatefulWidget {
+  final ReservationModel reservation;
+
+  const _ReservationDetailBody({required this.reservation});
+
+  @override
+  ConsumerState<_ReservationDetailBody> createState() =>
+      _ReservationDetailBodyState();
+}
+
+class _ReservationDetailBodyState
+    extends ConsumerState<_ReservationDetailBody> {
+  bool _busy = false;
+
+  ReservationModel get reservation => widget.reservation;
+
+  Future<void> _run(Future<void> Function() action) async {
+    setState(() => _busy = true);
+    try {
+      await action();
+    } catch (e) {
+      if (mounted) showErrorSnackBar(context, e);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final locale = Localizations.localeOf(context).languageCode;
+    final actions = ref.read(reservationActionsProvider);
+
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Info del arrendatario
+          Text(l10n.renterInfo, style: AppTextStyles.title),
+          const SizedBox(height: 12),
+          WheelsPeCard(
+            child: Row(
+              children: [
+                AvatarWidget(
+                  name: reservation.renterName,
+                  imageUrl: reservation.renterAvatar,
+                  radius: 28,
+                  showVerifiedBadge: reservation.renterVerified,
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(reservation.renterName, style: AppTextStyles.body),
+                      const SizedBox(height: 4),
+                      RatingStars(rating: reservation.renterRating),
+                    ],
+                  ),
+                ),
+                if (reservation.renterVerified)
+                  const Icon(Icons.verified, color: AppColors.accent),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Info del alquiler
+          Text(l10n.rentalInfo, style: AppTextStyles.title),
+          const SizedBox(height: 12),
+          WheelsPeCard(
+            child: Column(
+              children: [
+                if (reservation.vehicleName.isNotEmpty)
+                  _row(l10n.model, reservation.vehicleName),
+                _row(
+                  l10n.departureDate,
+                  '${DateFormatter.shortDate(reservation.startDate, locale)}'
+                  ' → '
+                  '${DateFormatter.shortDate(reservation.endDate, locale)}',
+                ),
+                _row(l10n.totalDays(reservation.totalDaysCount), ''),
+                _row(
+                  l10n.totalAmount,
+                  CurrencyFormatter.format(reservation.totalAmount),
+                ),
+                if (reservation.deposit > 0)
+                  _row(
+                    l10n.deposit,
+                    CurrencyFormatter.format(reservation.deposit),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Línea de tiempo
+          Text(l10n.timeline, style: AppTextStyles.title),
+          const SizedBox(height: 12),
+          WheelsPeCard(
+            child: Column(
+              children: [
+                _TimelineStep(
+                  label: l10n.statusPending,
+                  date: reservation.createdAt,
+                  locale: locale,
+                  done: true,
+                ),
+                _TimelineStep(
+                  label: l10n.statusConfirmed,
+                  date: reservation.confirmedAt,
+                  locale: locale,
+                  done: reservation.status.index >=
+                      ReservationStatus.confirmed.index &&
+                      reservation.status != ReservationStatus.cancelled,
+                ),
+                _TimelineStep(
+                  label: l10n.statusInProgress,
+                  date: reservation.startedAt,
+                  locale: locale,
+                  done: reservation.status.index >=
+                      ReservationStatus.inProgress.index &&
+                      reservation.status != ReservationStatus.cancelled,
+                ),
+                _TimelineStep(
+                  label: reservation.status == ReservationStatus.cancelled
+                      ? l10n.statusCancelled
+                      : l10n.statusCompleted,
+                  date: reservation.completedAt,
+                  locale: locale,
+                  done: reservation.status == ReservationStatus.completed ||
+                      reservation.status == ReservationStatus.cancelled,
+                  isLast: true,
+                  isError:
+                      reservation.status == ReservationStatus.cancelled,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Acciones según estado
+          ..._buildActions(l10n, actions),
+          const SizedBox(height: 12),
+          WheelsPeButton(
+            label: l10n.reportIncident,
+            icon: Icons.report_outlined,
+            variant: WheelsPeButtonVariant.secondary,
+            onPressed: () => context.push(
+              '/incidents/report?reservationId=${reservation.id}',
+            ),
+          ),
+          const SizedBox(height: 32),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildActions(
+    AppLocalizations l10n,
+    ReservationActions actions,
+  ) {
+    switch (reservation.status) {
+      case ReservationStatus.pending:
+        return [
+          WheelsPeButton(
+            label: l10n.confirmReservation,
+            variant: WheelsPeButtonVariant.success,
+            loading: _busy,
+            onPressed: () => _run(() => actions.confirm(reservation)),
+          ),
+          const SizedBox(height: 12),
+          WheelsPeButton(
+            label: l10n.reject,
+            variant: WheelsPeButtonVariant.danger,
+            loading: _busy,
+            onPressed: () => _run(() => actions.cancel(reservation)),
+          ),
+        ];
+      case ReservationStatus.confirmed:
+        return [
+          WheelsPeButton(
+            label: l10n.registerVehicleDelivery,
+            icon: Icons.vpn_key_outlined,
+            loading: _busy,
+            onPressed: () => _run(() async {
+              await actions.startRental(reservation);
+              if (mounted) {
+                context.push(
+                  '/fleet/${reservation.vehicleId}/checklist?tipo=PRE',
+                );
+              }
+            }),
+          ),
+        ];
+      case ReservationStatus.inProgress:
+        return [
+          WheelsPeButton(
+            label: l10n.registerVehicleReturn,
+            icon: Icons.assignment_return_outlined,
+            loading: _busy,
+            onPressed: () => _run(() async {
+              await actions.completeRental(reservation);
+              if (mounted) {
+                context.push(
+                  '/fleet/${reservation.vehicleId}/checklist?tipo=POST',
+                );
+              }
+            }),
+          ),
+        ];
+      case ReservationStatus.completed:
+        return [
+          WheelsPeButton(
+            label: l10n.viewReceipt,
+            icon: Icons.receipt_long_outlined,
+            onPressed: () => context.push('/transactions'),
+          ),
+        ];
+      case ReservationStatus.cancelled:
+        return const [];
+    }
+  }
+
+  Widget _row(String label, String value) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(label, style: AppTextStyles.bodySecondary),
+            ),
+            Text(value, style: AppTextStyles.body),
+          ],
+        ),
+      );
+}
+
+class _TimelineStep extends StatelessWidget {
+  final String label;
+  final DateTime? date;
+  final String locale;
+  final bool done;
+  final bool isLast;
+  final bool isError;
+
+  const _TimelineStep({
+    required this.label,
+    required this.date,
+    required this.locale,
+    required this.done,
+    this.isLast = false,
+    this.isError = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isError
+        ? AppColors.error
+        : done
+            ? AppColors.success
+            : AppColors.divider;
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Column(
+            children: [
+              Icon(
+                isError
+                    ? Icons.cancel
+                    : done
+                        ? Icons.check_circle
+                        : Icons.radio_button_unchecked,
+                size: 20,
+                color: color,
+              ),
+              if (!isLast)
+                Expanded(
+                  child: Container(width: 2, color: color),
+                ),
+            ],
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(bottom: isLast ? 0 : 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: AppTextStyles.body.copyWith(
+                      color: done
+                          ? AppColors.textPrimary
+                          : AppColors.textSecondary,
+                    ),
+                  ),
+                  if (date != null)
+                    Text(
+                      DateFormatter.fullDateTime(date!, locale),
+                      style: AppTextStyles.caption,
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
