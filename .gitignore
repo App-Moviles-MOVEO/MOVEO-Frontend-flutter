@@ -43,3 +43,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# SDK de Flutter clonado por Vercel durante el build (no commitear)
+/flutter/

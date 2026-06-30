@@ -23,6 +23,29 @@ void showSuccessSnackBar(BuildContext context, String message) {
   );
 }
 
+/// SnackBar informativo (azul). Útil para avisar de funciones no disponibles
+/// en la plataforma actual, por ejemplo en web.
+void showInfoSnackBar(BuildContext context, String message) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      duration: const Duration(seconds: 4),
+      backgroundColor: AppColors.primary,
+      content: Row(
+        children: [
+          const Icon(Icons.info_outline, color: AppColors.onPrimary),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              message,
+              style: AppTextStyles.body.copyWith(color: AppColors.onPrimary),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
 /// SnackBar de error con mensaje legible según el tipo de excepción.
 void showErrorSnackBar(BuildContext context, Object error) {
   final l10n = AppLocalizations.of(context);

@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:wheelspe_provider/core/constants/app_colors.dart';
 import 'package:wheelspe_provider/core/constants/app_text_styles.dart';
+import 'package:wheelspe_provider/core/utils/platform_utils.dart';
 import 'package:wheelspe_provider/features/auth/data/auth_models.dart';
 import 'package:wheelspe_provider/features/auth/presentation/auth_providers.dart';
 import 'package:wheelspe_provider/l10n/generated/app_localizations.dart';
@@ -31,6 +32,15 @@ class _KycScreenState extends ConsumerState<KycScreen> {
   bool _retrying = false;
 
   Future<void> _pick(bool isFront) async {
+    // El escáner/cámara de DNI usa hardware nativo que no funciona en web.
+    if (isWeb) {
+      showInfoSnackBar(
+        context,
+        'El escaneo de DNI solo está disponible en la app móvil. '
+        'Descárgala para verificar tu identidad.',
+      );
+      return;
+    }
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
       builder: (context) => SafeArea(
