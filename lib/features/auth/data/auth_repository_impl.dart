@@ -12,8 +12,7 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<LoginResult> login(String email, String password) async {
     final result = await _remote.login(email, password);
-    await _storage.saveToken(result.token);
-    await _storage.saveUserId(result.userId);
+    await _persist(result);
     return result;
   }
 
@@ -30,37 +29,64 @@ class AuthRepositoryImpl implements AuthRepository {
       fullName: fullName,
       phone: phone,
     );
-    if (result != null) {
-      await _storage.saveToken(result.token);
-      await _storage.saveUserId(result.userId);
-      return result;
+    // Si el backend no devolvió id en el registro, autenticamos para obtenerlo.
+    if (result.userId.isEmpty) {
+      return login(email, password);
     }
-    return login(email, password);
+    await _persist(result);
+    return result;
+  }
+
+  Future<void> _persist(LoginResult result) async {
+    await _storage.saveUserId(result.userId);
+    await _storage.saveRole(result.role);
+  }
+
+  Future<String> _requireUserId() async {
+    final id = await _storage.getUserId();
+    if (id == null || id.isEmpty) {
+      throw StateError('No hay sesión activa');
+    }
+    return id;
   }
 
   @override
-  Future<void> uploadKyc({
-    required String documentType,
-    required String frontImagePath,
-    required String backImagePath,
-  }) =>
-      _remote.uploadKyc(
-        documentType: documentType,
-        frontImagePath: frontImagePath,
-        backImagePath: backImagePath,
-      );
+  Future<void> submitKyc({required String documentType}) async {
+    final userId = await _requireUserId();
+    await _remote.submitKyc(userId: userId, documentType: documentType);
+  }
 
   @override
-  Future<KycStatusResult> getKycStatus() => _remote.getKycStatus();
+  Future<KycStatusResult> getKycStatus() async {
+    final userId = await _requireUserId();
+    return _remote.getKycStatus(userId);
+  }
 
   @override
   Future<UserModel> getUser(String id) => _remote.getUser(id);
 
   @override
-  Future<void> logout() => _storage.clearSession();
+  Future<void> updateUser(String id, Map<String, dynamic> changes) =>
+      _remote.updateUser(id, changes);
 
   @override
-  Future<String?> getStoredToken() => _storage.getToken();
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final userId = await _requireUserId();
+    await _remote.changePassword(
+      userId: userId,
+      currentPassword: currentPassword,
+      newPassword: newPassword,
+    );
+  }
+
+  @override
+  Future<void> logout() async {
+    await _remote.logout();
+    await _storage.clearSession();
+  }
 
   @override
   Future<String?> getStoredUserId() => _storage.getUserId();

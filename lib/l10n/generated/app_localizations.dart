@@ -1256,6 +1256,12 @@ abstract class AppLocalizations {
   /// **'Últimas reseñas'**
   String get latestReviews;
 
+  /// No description provided for @noReviewsYet.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no tienes reseñas'**
+  String get noReviewsYet;
+
   /// No description provided for @statistics.
   ///
   /// In es, this message translates to:

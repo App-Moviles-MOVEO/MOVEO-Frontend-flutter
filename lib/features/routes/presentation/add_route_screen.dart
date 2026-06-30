@@ -8,6 +8,7 @@ import 'package:wheelspe_provider/core/utils/date_formatter.dart';
 import 'package:wheelspe_provider/core/utils/validators.dart';
 import 'package:wheelspe_provider/features/routes/presentation/routes_providers.dart';
 import 'package:wheelspe_provider/l10n/generated/app_localizations.dart';
+import 'package:wheelspe_provider/shared/providers/user_provider.dart';
 import 'package:wheelspe_provider/shared/widgets/snackbars.dart';
 import 'package:wheelspe_provider/shared/widgets/wheelspe_button.dart';
 import 'package:wheelspe_provider/shared/widgets/wheelspe_card.dart';
@@ -61,7 +62,12 @@ class _AddRouteScreenState extends ConsumerState<AddRouteScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _publishing = true);
     try {
+      final ownerId = await ref.read(currentUserIdProvider.future);
+      if (ownerId == null || ownerId.isEmpty) {
+        throw StateError('No hay sesión activa');
+      }
       final route = await ref.read(routesRepositoryProvider).publishRoute(
+            ownerId: ownerId,
             origin: _originController.text.trim(),
             destination: _destinationController.text.trim(),
             departureDate: _date,

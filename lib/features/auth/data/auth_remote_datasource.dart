@@ -20,7 +20,9 @@ class AuthRemoteDataSource {
     }
   }
 
-  Future<LoginResult?> register({
+  /// Registra al proveedor con rol `owner` (lo que espera el backend).
+  /// Devuelve el usuario creado (sin token).
+  Future<LoginResult> register({
     required String email,
     required String password,
     required String fullName,
@@ -34,39 +36,37 @@ class AuthRemoteDataSource {
           'password': password,
           'fullName': fullName,
           'phone': phone,
-          'role': 'PROVIDER',
+          'role': 'owner',
         },
       );
-      final data = response.data;
-      if (data == null || data['token'] == null) return null;
-      return LoginResult.fromJson(data);
+      return LoginResult.fromJson(response.data ?? {});
     } on DioException catch (e) {
       throwAsAppException(e);
     }
   }
 
-  Future<void> uploadKyc({
-    required String documentType,
-    required String frontImagePath,
-    required String backImagePath,
+  Future<void> logout() async {
+    try {
+      await _dio.post<dynamic>(ApiConstants.logout);
+    } on DioException catch (_) {
+      // Logout simbólico en el backend; ignorar fallos de red.
+    }
+  }
+
+  Future<void> changePassword({
+    required String userId,
+    required String currentPassword,
+    required String newPassword,
   }) async {
     try {
-      final formData = FormData.fromMap({
-        'documentType': documentType,
-        'frontImage': await MultipartFile.fromFile(frontImagePath),
-        'backImage': await MultipartFile.fromFile(backImagePath),
-      });
-      await _dio.post<dynamic>(ApiConstants.kycUpload, data: formData);
-    } on DioException catch (e) {
-      throwAsAppException(e);
-    }
-  }
-
-  Future<KycStatusResult> getKycStatus() async {
-    try {
-      final response =
-          await _dio.get<Map<String, dynamic>>(ApiConstants.kycStatus);
-      return KycStatusResult.fromJson(response.data ?? {});
+      await _dio.post<dynamic>(
+        ApiConstants.changePassword,
+        data: {
+          'userId': userId,
+          'currentPassword': currentPassword,
+          'newPassword': newPassword,
+        },
+      );
     } on DioException catch (e) {
       throwAsAppException(e);
     }
@@ -84,30 +84,36 @@ class AuthRemoteDataSource {
 
   Future<void> updateUser(String id, Map<String, dynamic> data) async {
     try {
-      await _dio.put<dynamic>(ApiConstants.userById(id), data: data);
+      await _dio.patch<dynamic>(ApiConstants.userById(id), data: data);
     } on DioException catch (e) {
       throwAsAppException(e);
     }
   }
 
-  Future<void> rateUser({
-    required String raterId,
-    required String rateeId,
-    required int score,
-    String? comment,
+  /// KYC best-effort: el backend NO tiene flujo KYC ni subida de imágenes.
+  /// Registramos la intención de verificación vía PATCH /users/{id}
+  /// (estado IN_REVIEW + tipo de documento). Las imágenes no se suben
+  /// porque no existe endpoint de almacenamiento.
+  Future<void> submitKyc({
+    required String userId,
+    required String documentType,
   }) async {
     try {
-      await _dio.post<dynamic>(
-        ApiConstants.rateUser,
+      await _dio.patch<dynamic>(
+        ApiConstants.userById(userId),
         data: {
-          'raterId': raterId,
-          'rateeId': rateeId,
-          'score': score,
-          'comment': comment,
+          'verificationStatus': 'IN_REVIEW',
+          'documentType': documentType,
         },
       );
     } on DioException catch (e) {
       throwAsAppException(e);
     }
+  }
+
+  /// Estado de verificación derivado del usuario.
+  Future<KycStatusResult> getKycStatus(String userId) async {
+    final user = await getUser(userId);
+    return KycStatusResult.fromUser(user);
   }
 }

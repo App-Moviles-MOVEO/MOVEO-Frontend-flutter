@@ -1,8 +1,17 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <application
-        android:label="wheelspe_provider"
+        android:label="WheelsPe"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <!-- Clave de Google Maps: reemplazar por una clave real para
+             que los tiles del mapa carguen. El placeholder evita el
+             crash de google_maps_flutter por meta-data ausente. -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="PLACEHOLDER_GOOGLE_MAPS_API_KEY"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"

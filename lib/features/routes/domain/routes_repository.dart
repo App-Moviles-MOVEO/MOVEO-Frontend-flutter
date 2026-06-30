@@ -2,11 +2,12 @@ import 'package:wheelspe_provider/features/routes/data/route_model.dart';
 
 /// Contrato de rutas de carpooling del conductor.
 abstract class RoutesRepository {
-  Future<List<RouteModel>> getMyRoutes(String driverId);
+  Future<List<RouteModel>> getMyRoutes(String ownerId);
 
   Future<RouteModel> getRoute(String id);
 
   Future<RouteModel> publishRoute({
+    required String ownerId,
     required String origin,
     required String destination,
     required DateTime departureDate,
@@ -22,7 +23,18 @@ abstract class RoutesRepository {
 
   Future<void> removePassenger(String routeId, String passengerId);
 
+  Future<void> startRoute(String id);
+
   Future<void> completeRoute(String id);
 
   Future<void> cancelRoute(String id);
+
+  /// Califica a un pasajero al finalizar la ruta (POST /user-reviews).
+  Future<void> ratePassenger({
+    required String raterId,
+    required String rateeId,
+    required int score,
+    String comment,
+    String? rentalId,
+  });
 }

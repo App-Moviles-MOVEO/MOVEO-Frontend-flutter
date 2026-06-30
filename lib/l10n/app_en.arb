@@ -200,6 +200,7 @@
   "ratingsCount": "{count} ratings",
   "@ratingsCount": { "placeholders": { "count": { "type": "int" } } },
   "latestReviews": "Latest reviews",
+  "noReviewsYet": "You have no reviews yet",
   "statistics": "Statistics",
   "totalRentals": "Completed rentals",
   "totalRoutes": "Routes as driver",

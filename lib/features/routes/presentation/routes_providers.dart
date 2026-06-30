@@ -40,10 +40,28 @@ class RouteActions {
     _invalidate(routeId);
   }
 
+  Future<void> start(String routeId) async {
+    await _repo.startRoute(routeId);
+    _invalidate(routeId);
+  }
+
   Future<void> complete(String routeId) async {
     await _repo.completeRoute(routeId);
     _invalidate(routeId);
   }
+
+  Future<void> ratePassenger({
+    required String raterId,
+    required String rateeId,
+    required int score,
+    String comment = '',
+  }) =>
+      _repo.ratePassenger(
+        raterId: raterId,
+        rateeId: rateeId,
+        score: score,
+        comment: comment,
+      );
 
   Future<void> cancel(String routeId) async {
     await _repo.cancelRoute(routeId);

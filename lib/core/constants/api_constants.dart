@@ -1,57 +1,81 @@
-/// Endpoints y configuración base de la API de WheelsPe.
+/// Endpoints y configuración base de la API real de WheelsPe / MOVEO.
+///
+/// IMPORTANTE: el backend es **SIN JWT** (stateless por `userId`). El login
+/// devuelve el objeto usuario; la "sesión" es guardar ese `id` y mandarlo como
+/// `?userId=` / `ownerId=` / `recipientId=` / `payerId=` según el endpoint.
 class ApiConstants {
   ApiConstants._();
 
+  /// Base URL. Por defecto apunta al backend local desde el emulador Android
+  /// (`10.0.2.2` = `localhost` del host). Sobrescribir al compilar con:
+  /// `--dart-define=WHEELSPE_API_URL=http://localhost:8080/api/v1`
   static const String baseUrl = String.fromEnvironment(
     'WHEELSPE_API_URL',
-    defaultValue: 'https://wheelspe-backend.azurewebsites.net/api/v1',
+    defaultValue: 'http://10.0.2.2:8080/api/v1',
   );
 
-  // Auth & KYC
+  // Auth — /auth
   static const String register = '/auth/register';
   static const String login = '/auth/login';
-  static const String refresh = '/auth/refresh';
-  static const String kycUpload = '/auth/kyc/upload';
-  static const String kycStatus = '/auth/kyc/status';
+  static const String logout = '/auth/logout';
+  static const String me = '/auth/me';
+  static const String changePassword = '/auth/change-password';
 
-  // Usuarios
-  static String userById(String id) => '/users/$id';
+  // Usuarios — /users
   static const String users = '/users';
-  static const String rateUser = '/ratings/user';
+  static String userById(String id) => '/users/$id';
 
-  // Vehículos
+  // Vehículos — /vehicles
   static const String vehicles = '/vehicles';
   static String vehicleById(String id) => '/vehicles/$id';
-  static String vehicleStatus(String id) => '/vehicles/$id/status';
+  static String vehicleAvailability(String id) => '/vehicles/$id/availability';
 
-  // Reservas
-  static String reservationsByVehicle(String vehicleId) =>
-      '/reservations/vehicle/$vehicleId';
-  static String reservationById(String id) => '/reservations/$id';
-  static String reservationConfirm(String id) => '/reservations/$id/confirm';
-  static String reservationStart(String id) => '/reservations/$id/start';
-  static String reservationComplete(String id) => '/reservations/$id/complete';
-  static String reservationCancel(String id) => '/reservations/$id/cancel';
+  // Reservas / Alquileres — /rentals
+  static const String rentals = '/rentals';
+  static const String rentalsActive = '/rentals/active';
+  static String rentalById(String id) => '/rentals/$id';
+  static String rentalPay(String id) => '/rentals/$id/pay';
+  static String rentalsByUser(String userId) => '/rentals/user/$userId';
 
-  // Rutas carpooling
-  static String routesByDriver(String driverId) => '/routes/driver/$driverId';
-  static String routeById(String id) => '/routes/$id';
-  static const String routes = '/routes';
-  static String routePassengers(String id) => '/routes/$id/passengers';
-  static String routePassengerById(String id, String pid) =>
-      '/routes/$id/passengers/$pid';
-  static String routeComplete(String id) => '/routes/$id/complete';
-  static String routeCancel(String id) => '/routes/$id/cancel';
+  // Carpooling / Rutas — /adventure-routes
+  static const String routes = '/adventure-routes';
+  static String routeById(String id) => '/adventure-routes/$id';
+  static String routeBook(String id) => '/adventure-routes/$id/book';
 
-  // Transacciones
-  static String transactionsByPayee(String userId) =>
-      '/transactions/payee/$userId';
-  static String transactionById(String id) => '/transactions/$id';
-  static String invoicesByUser(String uid) => '/transactions/invoices/user/$uid';
-  static String transactionRefund(String id) => '/transactions/$id/refund';
+  // Pagos — /Payments
+  static const String payments = '/Payments';
+  static String paymentById(String id) => '/Payments/$id';
+  static String paymentsByRecipient(String id) => '/Payments/recipient/$id';
+  static String paymentsByPayer(String id) => '/Payments/payer/$id';
+  static String paymentsByRental(String id) => '/Payments/rental/$id';
 
-  // Incidentes
-  static const String incidents = '/incidents';
-  static String incidentsByUser(String uid) => '/incidents/user/$uid';
-  static String incidentById(String id) => '/incidents/$id';
+  // Reseñas de vehículo — /Reviews · Reseñas entre usuarios — /user-reviews
+  static const String reviews = '/Reviews';
+  static String reviewsByReviewee(String id) => '/Reviews/reviewee/$id';
+  static String reviewsByReviewer(String id) => '/Reviews/reviewer/$id';
+  static const String userReviews = '/user-reviews';
+
+  // Notificaciones — /Notifications
+  static const String notifications = '/Notifications';
+  static String notificationsByUser(String id) => '/Notifications/user/$id';
+  static String notificationsUnread(String id) =>
+      '/Notifications/user/$id/unread';
+  static String notificationById(String id) => '/Notifications/$id';
+  static String notificationRead(String id) => '/Notifications/$id/read';
+  static String notificationsReadAll(String id) =>
+      '/Notifications/user/$id/read-all';
+
+  // Chat 1-a-1 — /messages
+  static const String messages = '/messages';
+  static String conversations(String userId) =>
+      '/messages/conversations/$userId';
+  static String messageRead(String id) => '/messages/$id/read';
+
+  // Soporte / Ayuda — /support-tickets
+  static const String supportTickets = '/support-tickets';
+  static String supportTicketById(String id) => '/support-tickets/$id';
+  static String supportTicketsByUser(String id) => '/support-tickets/user/$id';
+  static String supportTicketClose(String id) => '/support-tickets/$id/close';
+  static String supportTicketMessages(String ticketId) =>
+      '/support-tickets/$ticketId/messages';
 }

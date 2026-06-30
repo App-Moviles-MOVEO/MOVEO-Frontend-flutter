@@ -6,18 +6,18 @@ enum RouteStatus {
   cancelled;
 
   String get apiValue => switch (this) {
-        RouteStatus.scheduled => 'SCHEDULED',
-        RouteStatus.inProgress => 'IN_PROGRESS',
-        RouteStatus.completed => 'COMPLETED',
-        RouteStatus.cancelled => 'CANCELLED',
+        RouteStatus.scheduled => 'active',
+        RouteStatus.inProgress => 'in_progress',
+        RouteStatus.completed => 'completed',
+        RouteStatus.cancelled => 'cancelled',
       };
 
   static RouteStatus fromString(String? value) =>
       switch (value?.toUpperCase()) {
-        'IN_PROGRESS' || 'STARTED' => RouteStatus.inProgress,
-        'COMPLETED' => RouteStatus.completed,
-        'CANCELLED' => RouteStatus.cancelled,
-        _ => RouteStatus.scheduled,
+        'IN_PROGRESS' || 'STARTED' || 'ONGOING' => RouteStatus.inProgress,
+        'COMPLETED' || 'FINISHED' => RouteStatus.completed,
+        'CANCELLED' || 'CANCELED' => RouteStatus.cancelled,
+        _ => RouteStatus.scheduled, // active / scheduled
       };
 }
 
@@ -129,12 +129,16 @@ class RouteModel {
       destLat: (json['destLat'] as num?)?.toDouble(),
       destLng: (json['destLng'] as num?)?.toDouble(),
       departureDateTime: departure,
-      availableSeats: (json['availableSeats'] as num?)?.toInt() ?? 0,
+      availableSeats: ((json['seatsAvailable'] ??
+                  json['availableSeats'] ??
+                  json['seatsTotal']) as num?)
+              ?.toInt() ??
+          0,
       pricePerSeat: (json['pricePerSeat'] as num?)?.toDouble() ?? 0,
-      institutionalFilter: json['institutionalFilter'] == true ||
-          json['institutionalFilter'] == 'UPC',
-      womenOnly: json['womenOnly'] == true,
-      notes: (json['notes'] ?? '') as String,
+      institutionalFilter: (json['community'] as String?)?.isNotEmpty == true ||
+          json['institutionalFilter'] == true,
+      womenOnly: json['onlyWomen'] == true || json['womenOnly'] == true,
+      notes: (json['description'] ?? json['notes'] ?? '') as String,
       status: RouteStatus.fromString(json['status'] as String?),
       passengers: (json['passengers'] as List?)
               ?.cast<Map<String, dynamic>>()

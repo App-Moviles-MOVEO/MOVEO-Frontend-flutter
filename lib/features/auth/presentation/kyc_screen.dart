@@ -63,11 +63,9 @@ class _KycScreenState extends ConsumerState<KycScreen> {
     if (_front == null || _back == null) return;
     setState(() => _uploading = true);
     try {
-      await ref.read(authRepositoryProvider).uploadKyc(
-            documentType: 'DNI',
-            frontImagePath: _front!.path,
-            backImagePath: _back!.path,
-          );
+      // El backend no tiene endpoint de subida de imágenes KYC; se registra
+      // la intención de verificación en el perfil del usuario (best-effort).
+      await ref.read(authRepositoryProvider).submitKyc(documentType: 'DNI');
       if (mounted) setState(() => _justSubmitted = true);
       ref.invalidate(kycStatusProvider);
     } catch (e) {

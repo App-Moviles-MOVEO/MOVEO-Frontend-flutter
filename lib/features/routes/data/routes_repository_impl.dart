@@ -9,14 +9,15 @@ class RoutesRepositoryImpl implements RoutesRepository {
   const RoutesRepositoryImpl(this._remote);
 
   @override
-  Future<List<RouteModel>> getMyRoutes(String driverId) =>
-      _remote.getDriverRoutes(driverId);
+  Future<List<RouteModel>> getMyRoutes(String ownerId) =>
+      _remote.getDriverRoutes(ownerId);
 
   @override
   Future<RouteModel> getRoute(String id) => _remote.getRoute(id);
 
   @override
   Future<RouteModel> publishRoute({
+    required String ownerId,
     required String origin,
     required String destination,
     required DateTime departureDate,
@@ -28,15 +29,20 @@ class RoutesRepositoryImpl implements RoutesRepository {
     String notes = '',
   }) =>
       _remote.createRoute({
+        'ownerId': ownerId,
+        'type': 'carpool',
+        'title': '$origin → $destination',
         'origin': origin,
         'destination': destination,
         'departureDate': DateFormat('yyyy-MM-dd').format(departureDate),
         'departureTime': departureTime,
-        'availableSeats': availableSeats,
+        'seatsTotal': availableSeats,
+        'seatsAvailable': availableSeats,
         'pricePerSeat': pricePerSeat,
-        if (institutionalFilter) 'institutionalFilter': 'UPC',
-        'womenOnly': womenOnly,
-        if (notes.isNotEmpty) 'notes': notes,
+        'onlyWomen': womenOnly,
+        if (institutionalFilter) 'community': 'UPC',
+        if (notes.isNotEmpty) 'description': notes,
+        'status': 'active',
       });
 
   @override
@@ -48,8 +54,28 @@ class RoutesRepositoryImpl implements RoutesRepository {
       _remote.removePassenger(routeId, passengerId);
 
   @override
-  Future<void> completeRoute(String id) => _remote.completeRoute(id);
+  Future<void> startRoute(String id) => _remote.setStatus(id, 'in_progress');
 
   @override
-  Future<void> cancelRoute(String id) => _remote.cancelRoute(id);
+  Future<void> completeRoute(String id) => _remote.setStatus(id, 'completed');
+
+  @override
+  Future<void> cancelRoute(String id) => _remote.setStatus(id, 'cancelled');
+
+  @override
+  Future<void> ratePassenger({
+    required String raterId,
+    required String rateeId,
+    required int score,
+    String comment = '',
+    String? rentalId,
+  }) =>
+      _remote.rateUser({
+        'reviewerId': raterId,
+        'reviewedUserId': rateeId,
+        'rating': score,
+        'type': 'owner_to_renter',
+        if (comment.isNotEmpty) 'comment': comment,
+        'rentalId': ?rentalId,
+      });
 }

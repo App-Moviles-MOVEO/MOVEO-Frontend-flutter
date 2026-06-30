@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart' show DateTimeRange;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wheelspe_provider/core/network/dio_client.dart';
 import 'package:wheelspe_provider/features/fleet/data/fleet_remote_datasource.dart';
@@ -28,30 +29,32 @@ final vehicleReservationsProvider =
       ref.watch(fleetRepositoryProvider).getVehicleReservations(vehicleId),
 );
 
+/// Rangos de fechas ocupados de un vehículo (calendario de disponibilidad).
+final vehicleAvailabilityProvider =
+    FutureProvider.family<List<DateTimeRange>, String>(
+  (ref, vehicleId) =>
+      ref.watch(fleetRepositoryProvider).getAvailability(vehicleId),
+);
+
+/// Todas las reservas del proveedor (todos sus vehículos), vía /rentals?ownerId=.
+final ownerReservationsProvider =
+    FutureProvider<List<ReservationModel>>((ref) async {
+  final userId = await ref.watch(currentUserIdProvider.future);
+  if (userId == null) return const [];
+  return ref.watch(fleetRepositoryProvider).getOwnerReservations(userId);
+});
+
 final reservationDetailProvider =
     FutureProvider.family<ReservationModel, String>(
   (ref, id) => ref.watch(fleetRepositoryProvider).getReservation(id),
 );
 
-/// Todas las reservas PENDING de todos los vehículos del proveedor
-/// (alimenta el dashboard y el polling de notificaciones).
+/// Todas las reservas PENDING del proveedor (alimenta el dashboard y el
+/// polling de notificaciones). Usa /rentals?ownerId= directamente.
 final pendingReservationsProvider =
     FutureProvider<List<ReservationModel>>((ref) async {
-  final vehicles = await ref.watch(myVehiclesProvider.future);
-  final repository = ref.watch(fleetRepositoryProvider);
-  final results = await Future.wait(
-    vehicles.map((v) async {
-      try {
-        return await repository.getVehicleReservations(v.id);
-      } catch (_) {
-        return const <ReservationModel>[];
-      }
-    }),
-  );
-  return [
-    for (final list in results)
-      ...list.where((r) => r.status == ReservationStatus.pending),
-  ];
+  final all = await ref.watch(ownerReservationsProvider.future);
+  return all.where((r) => r.status == ReservationStatus.pending).toList();
 });
 
 /// Acciones sobre reservas con invalidación de caches relacionadas.
@@ -85,6 +88,7 @@ class ReservationActions {
   void _invalidate(ReservationModel reservation) {
     _ref.invalidate(reservationDetailProvider(reservation.id));
     _ref.invalidate(vehicleReservationsProvider(reservation.vehicleId));
+    _ref.invalidate(ownerReservationsProvider);
     _ref.invalidate(pendingReservationsProvider);
     _ref.invalidate(vehicleDetailProvider(reservation.vehicleId));
   }

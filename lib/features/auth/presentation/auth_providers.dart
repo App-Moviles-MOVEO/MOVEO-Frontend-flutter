@@ -7,6 +7,7 @@ import 'package:wheelspe_provider/features/auth/data/auth_repository_impl.dart';
 import 'package:wheelspe_provider/features/auth/domain/auth_repository.dart';
 import 'package:wheelspe_provider/features/auth/domain/login_usecase.dart';
 import 'package:wheelspe_provider/features/auth/domain/register_usecase.dart';
+import 'package:wheelspe_provider/shared/providers/user_provider.dart';
 
 final authRemoteDataSourceProvider = Provider<AuthRemoteDataSource>(
   (ref) => AuthRemoteDataSource(ref.watch(dioProvider)),
@@ -41,7 +42,7 @@ class AuthController extends Notifier<AsyncValue<void>> {
     state = const AsyncLoading();
     try {
       await ref.read(loginUseCaseProvider)(email, password);
-      ref.read(sessionNotifierProvider).reset();
+      _refreshSession();
       state = const AsyncData(null);
       return true;
     } catch (e, st) {
@@ -64,7 +65,7 @@ class AuthController extends Notifier<AsyncValue<void>> {
         fullName: fullName,
         phone: phone,
       );
-      ref.read(sessionNotifierProvider).reset();
+      _refreshSession();
       state = const AsyncData(null);
       return true;
     } catch (e, st) {
@@ -75,7 +76,17 @@ class AuthController extends Notifier<AsyncValue<void>> {
 
   Future<void> logout() async {
     await ref.read(authRepositoryProvider).logout();
+    ref.invalidate(currentUserIdProvider);
+    ref.invalidate(currentUserProvider);
     state = const AsyncData(null);
+  }
+
+  /// Refresca la sesión cacheada y el KYC tras autenticarse.
+  void _refreshSession() {
+    ref.read(sessionNotifierProvider).reset();
+    ref.invalidate(currentUserIdProvider);
+    ref.invalidate(currentUserProvider);
+    ref.invalidate(kycStatusProvider);
   }
 }
 

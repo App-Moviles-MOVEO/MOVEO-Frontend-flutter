@@ -3,10 +3,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wheelspe_provider/core/constants/api_constants.dart';
 import 'package:wheelspe_provider/core/errors/exceptions.dart';
-import 'package:wheelspe_provider/core/network/jwt_interceptor.dart';
-import 'package:wheelspe_provider/core/storage/secure_storage.dart';
 
-/// Notifica a la app (router) cuando la sesión expira definitivamente.
+/// Notifica a la app (router) cuando la sesión deja de ser válida.
+///
+/// Sin JWT no hay expiración por token, pero mantenemos el mecanismo para
+/// forzar el regreso a login si el backend responde 401 en algún endpoint.
 class SessionNotifier extends ChangeNotifier {
   bool _expired = false;
 
@@ -29,23 +30,15 @@ final sessionNotifierProvider =
     ChangeNotifierProvider<SessionNotifier>((ref) => SessionNotifier());
 
 final dioProvider = Provider<Dio>((ref) {
-  final storage = ref.watch(secureStorageProvider);
-  final session = ref.watch(sessionNotifierProvider);
-
   final dio = Dio(
     BaseOptions(
       baseUrl: ApiConstants.baseUrl,
       connectTimeout: const Duration(seconds: 15),
       receiveTimeout: const Duration(seconds: 20),
-      headers: {'Accept': 'application/json'},
-    ),
-  );
-
-  dio.interceptors.add(
-    JwtInterceptor(
-      storage: storage,
-      dio: dio,
-      onSessionExpired: session.expire,
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
     ),
   );
 
@@ -64,9 +57,11 @@ Never throwAsAppException(DioException e) {
       final status = e.response?.statusCode;
       if (status == 401) throw const AuthException();
       final data = e.response?.data;
-      final message = (data is Map && data['message'] != null)
-          ? data['message'].toString()
-          : 'Error del servidor';
-      throw ServerException(message, statusCode: status);
+      String? message;
+      if (data is Map) {
+        message = (data['message'] ?? data['error'] ?? data['title'])
+            ?.toString();
+      }
+      throw ServerException(message ?? 'Error del servidor', statusCode: status);
   }
 }

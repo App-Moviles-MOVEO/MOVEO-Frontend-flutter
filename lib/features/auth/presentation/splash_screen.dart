@@ -33,17 +33,17 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     final wait = Future<void>.delayed(const Duration(milliseconds: 1400));
 
     final repository = ref.read(authRepositoryProvider);
-    final token = await repository.getStoredToken();
+    final userId = await repository.getStoredUserId();
 
     String next;
-    if (token == null || token.isEmpty) {
+    if (userId == null || userId.isEmpty) {
       next = '/onboarding';
     } else {
       try {
         final kyc = await repository.getKycStatus();
         next = kyc.status == KycStatus.verified ? '/home' : '/auth/kyc';
       } catch (_) {
-        // Token inválido o backend caído: vuelve al login.
+        // Sesión inválida o backend caído: vuelve al login.
         next = '/auth/login';
       }
     }

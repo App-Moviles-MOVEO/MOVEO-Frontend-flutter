@@ -610,6 +610,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get latestReviews => 'Últimas reseñas';
 
   @override
+  String get noReviewsYet => 'Aún no tienes reseñas';
+
+  @override
   String get statistics => 'Estadísticas';
 
   @override

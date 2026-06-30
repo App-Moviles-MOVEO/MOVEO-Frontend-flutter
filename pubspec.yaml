@@ -45,6 +45,10 @@ dependencies:
   # Notifications
   flutter_local_notifications: ^17.2.3
 
+  # Comprobantes (PDF en dispositivo) — US25
+  pdf: ^3.11.1
+  printing: ^5.13.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

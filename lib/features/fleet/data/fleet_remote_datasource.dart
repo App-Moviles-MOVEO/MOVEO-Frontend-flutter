@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart' show DateTimeRange;
 import 'package:wheelspe_provider/core/constants/api_constants.dart';
 import 'package:wheelspe_provider/core/network/dio_client.dart';
 import 'package:wheelspe_provider/features/fleet/data/reservation_model.dart';
@@ -9,11 +10,11 @@ class FleetRemoteDataSource {
 
   const FleetRemoteDataSource(this._dio);
 
-  Future<List<VehicleModel>> getVehicles(String providerId) async {
+  Future<List<VehicleModel>> getVehicles(String ownerId) async {
     try {
       final response = await _dio.get<dynamic>(
         ApiConstants.vehicles,
-        queryParameters: {'providerId': providerId},
+        queryParameters: {'ownerId': ownerId},
       );
       return _asList(response.data).map(VehicleModel.fromJson).toList();
     } on DioException catch (e) {
@@ -51,10 +52,11 @@ class FleetRemoteDataSource {
     }
   }
 
+  /// Cambia el estado del vehículo: PATCH /vehicles/{id} con {status}.
   Future<void> updateVehicleStatus(String id, VehicleStatus status) async {
     try {
       await _dio.patch<dynamic>(
-        ApiConstants.vehicleStatus(id),
+        ApiConstants.vehicleById(id),
         data: {'status': status.apiValue},
       );
     } on DioException catch (e) {
@@ -62,12 +64,55 @@ class FleetRemoteDataSource {
     }
   }
 
+  /// Rangos de fechas ocupados del vehículo (para bloquear calendario).
+  Future<List<DateTimeRange>> getAvailability(String vehicleId) async {
+    try {
+      final response = await _dio
+          .get<dynamic>(ApiConstants.vehicleAvailability(vehicleId));
+      final data = response.data;
+      final raw = data is Map
+          ? (data['busyRanges'] ?? data['busy'] ?? data['ranges'])
+          : data;
+      if (raw is! List) return const [];
+      return raw
+          .cast<Map<String, dynamic>>()
+          .map((r) {
+            final start = DateTime.tryParse(
+                (r['start'] ?? r['startDate'] ?? '').toString());
+            final end = DateTime.tryParse(
+                (r['end'] ?? r['endDate'] ?? '').toString());
+            if (start == null || end == null) return null;
+            return DateTimeRange(start: start, end: end);
+          })
+          .whereType<DateTimeRange>()
+          .toList();
+    } on DioException catch (e) {
+      throwAsAppException(e);
+    }
+  }
+
+  /// Reservas de un vehículo: GET /rentals?vehicleId=
   Future<List<ReservationModel>> getReservationsByVehicle(
     String vehicleId,
   ) async {
     try {
-      final response = await _dio
-          .get<dynamic>(ApiConstants.reservationsByVehicle(vehicleId));
+      final response = await _dio.get<dynamic>(
+        ApiConstants.rentals,
+        queryParameters: {'vehicleId': vehicleId},
+      );
+      return _asList(response.data).map(ReservationModel.fromJson).toList();
+    } on DioException catch (e) {
+      throwAsAppException(e);
+    }
+  }
+
+  /// Reservas de todos los vehículos del proveedor: GET /rentals?ownerId=
+  Future<List<ReservationModel>> getReservationsByOwner(String ownerId) async {
+    try {
+      final response = await _dio.get<dynamic>(
+        ApiConstants.rentals,
+        queryParameters: {'ownerId': ownerId},
+      );
       return _asList(response.data).map(ReservationModel.fromJson).toList();
     } on DioException catch (e) {
       throwAsAppException(e);
@@ -76,29 +121,33 @@ class FleetRemoteDataSource {
 
   Future<ReservationModel> getReservation(String id) async {
     try {
-      final response = await _dio
-          .get<Map<String, dynamic>>(ApiConstants.reservationById(id));
+      final response =
+          await _dio.get<Map<String, dynamic>>(ApiConstants.rentalById(id));
       return ReservationModel.fromJson(response.data ?? {});
     } on DioException catch (e) {
       throwAsAppException(e);
     }
   }
 
+  // Transición de estados vía PATCH /rentals/{id} {status}.
   Future<void> confirmReservation(String id) =>
-      _patch(ApiConstants.reservationConfirm(id));
+      _patchStatus(id, ReservationStatus.confirmed);
 
   Future<void> startReservation(String id) =>
-      _patch(ApiConstants.reservationStart(id));
+      _patchStatus(id, ReservationStatus.inProgress);
 
   Future<void> completeReservation(String id) =>
-      _patch(ApiConstants.reservationComplete(id));
+      _patchStatus(id, ReservationStatus.completed);
 
   Future<void> cancelReservation(String id) =>
-      _patch(ApiConstants.reservationCancel(id));
+      _patchStatus(id, ReservationStatus.cancelled);
 
-  Future<void> _patch(String path) async {
+  Future<void> _patchStatus(String id, ReservationStatus status) async {
     try {
-      await _dio.patch<dynamic>(path);
+      await _dio.patch<dynamic>(
+        ApiConstants.rentalById(id),
+        data: {'status': status.apiValue},
+      );
     } on DioException catch (e) {
       throwAsAppException(e);
     }
@@ -111,6 +160,9 @@ class FleetRemoteDataSource {
     }
     if (data is Map && data['items'] is List) {
       return (data['items'] as List).cast<Map<String, dynamic>>();
+    }
+    if (data is Map && data['data'] is List) {
+      return (data['data'] as List).cast<Map<String, dynamic>>();
     }
     return const [];
   }

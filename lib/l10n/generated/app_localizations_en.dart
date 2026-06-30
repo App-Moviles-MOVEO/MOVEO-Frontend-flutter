@@ -606,6 +606,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get latestReviews => 'Latest reviews';
 
   @override
+  String get noReviewsYet => 'You have no reviews yet';
+
+  @override
   String get statistics => 'Statistics';
 
   @override

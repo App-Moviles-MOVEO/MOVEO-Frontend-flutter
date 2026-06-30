@@ -112,8 +112,20 @@ class _ReservationDetailBodyState
                     ],
                   ),
                 ),
-                if (reservation.renterVerified)
-                  const Icon(Icons.verified, color: AppColors.accent),
+                Semantics(
+                  label: 'Contactar cliente',
+                  button: true,
+                  child: IconButton(
+                    icon: const Icon(Icons.chat_bubble_outline,
+                        color: AppColors.accent),
+                    onPressed: reservation.renterId.isEmpty
+                        ? null
+                        : () => context.push(
+                              '/chat/${reservation.renterId}'
+                              '?name=${Uri.encodeComponent(reservation.renterName)}',
+                            ),
+                  ),
+                ),
               ],
             ),
           ),

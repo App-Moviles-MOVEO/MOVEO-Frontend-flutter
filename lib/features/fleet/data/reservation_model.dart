@@ -1,25 +1,26 @@
-/// Estado de la reserva de alquiler.
+/// Estado de la reserva de alquiler (contrato real del backend):
+/// `pending` → `accepted` → `active` → `completed`, o `cancelled`.
 enum ReservationStatus {
   pending,
-  confirmed,
-  inProgress,
+  confirmed, // == "accepted" en el backend
+  inProgress, // == "active" en el backend
   completed,
   cancelled;
 
   String get apiValue => switch (this) {
-        ReservationStatus.pending => 'PENDING',
-        ReservationStatus.confirmed => 'CONFIRMED',
-        ReservationStatus.inProgress => 'IN_PROGRESS',
-        ReservationStatus.completed => 'COMPLETED',
-        ReservationStatus.cancelled => 'CANCELLED',
+        ReservationStatus.pending => 'pending',
+        ReservationStatus.confirmed => 'accepted',
+        ReservationStatus.inProgress => 'active',
+        ReservationStatus.completed => 'completed',
+        ReservationStatus.cancelled => 'cancelled',
       };
 
   static ReservationStatus fromString(String? value) =>
       switch (value?.toUpperCase()) {
-        'CONFIRMED' => ReservationStatus.confirmed,
-        'IN_PROGRESS' || 'STARTED' => ReservationStatus.inProgress,
+        'ACCEPTED' || 'CONFIRMED' => ReservationStatus.confirmed,
+        'ACTIVE' || 'IN_PROGRESS' || 'STARTED' => ReservationStatus.inProgress,
         'COMPLETED' => ReservationStatus.completed,
-        'CANCELLED' || 'REJECTED' => ReservationStatus.cancelled,
+        'CANCELLED' || 'CANCELED' || 'REJECTED' => ReservationStatus.cancelled,
         _ => ReservationStatus.pending,
       };
 }

@@ -1,9 +1,10 @@
+import 'package:flutter/material.dart' show DateTimeRange;
 import 'package:wheelspe_provider/features/fleet/data/reservation_model.dart';
 import 'package:wheelspe_provider/features/fleet/data/vehicle_model.dart';
 
 /// Contrato de la flota del proveedor.
 abstract class FleetRepository {
-  Future<List<VehicleModel>> getMyVehicles(String providerId);
+  Future<List<VehicleModel>> getMyVehicles(String ownerId);
 
   Future<VehicleModel> getVehicle(String id);
 
@@ -13,7 +14,11 @@ abstract class FleetRepository {
 
   Future<void> changeStatus(String id, VehicleStatus status);
 
+  Future<List<DateTimeRange>> getAvailability(String vehicleId);
+
   Future<List<ReservationModel>> getVehicleReservations(String vehicleId);
+
+  Future<List<ReservationModel>> getOwnerReservations(String ownerId);
 
   Future<ReservationModel> getReservation(String id);
 

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart' show DateTimeRange;
 import 'package:wheelspe_provider/features/fleet/data/fleet_remote_datasource.dart';
 import 'package:wheelspe_provider/features/fleet/data/reservation_model.dart';
 import 'package:wheelspe_provider/features/fleet/data/vehicle_model.dart';
@@ -9,8 +10,8 @@ class FleetRepositoryImpl implements FleetRepository {
   const FleetRepositoryImpl(this._remote);
 
   @override
-  Future<List<VehicleModel>> getMyVehicles(String providerId) =>
-      _remote.getVehicles(providerId);
+  Future<List<VehicleModel>> getMyVehicles(String ownerId) =>
+      _remote.getVehicles(ownerId);
 
   @override
   Future<VehicleModel> getVehicle(String id) => _remote.getVehicle(id);
@@ -28,8 +29,16 @@ class FleetRepositoryImpl implements FleetRepository {
       _remote.updateVehicleStatus(id, status);
 
   @override
+  Future<List<DateTimeRange>> getAvailability(String vehicleId) =>
+      _remote.getAvailability(vehicleId);
+
+  @override
   Future<List<ReservationModel>> getVehicleReservations(String vehicleId) =>
       _remote.getReservationsByVehicle(vehicleId);
+
+  @override
+  Future<List<ReservationModel>> getOwnerReservations(String ownerId) =>
+      _remote.getReservationsByOwner(ownerId);
 
   @override
   Future<ReservationModel> getReservation(String id) =>
