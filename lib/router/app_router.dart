@@ -38,17 +38,24 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: '/splash',
+    initialLocation: '/blank',
     refreshListenable: session,
     redirect: (context, state) {
       // 401 definitivo: la sesión expiró → volver a login.
       final onAuthFlow = state.matchedLocation.startsWith('/auth') ||
+          state.matchedLocation == '/blank' ||
           state.matchedLocation == '/splash' ||
           state.matchedLocation == '/onboarding';
       if (session.expired && !onAuthFlow) return '/auth/login';
       return null;
     },
     routes: [
+      // Vista en blanco inicial (pantalla blanca vacía).
+      GoRoute(
+        path: '/blank',
+        builder: (context, state) =>
+            const Scaffold(backgroundColor: Colors.white),
+      ),
       // Flujo inicial sin autenticación
       GoRoute(
         path: '/splash',
