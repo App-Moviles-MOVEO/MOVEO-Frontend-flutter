@@ -33,19 +33,25 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     final wait = Future<void>.delayed(const Duration(milliseconds: 1400));
 
     final repository = ref.read(authRepositoryProvider);
-    final userId = await repository.getStoredUserId();
 
+    // Cualquier fallo aquí (p. ej. secure storage en web) debe terminar SIEMPRE
+    // en una navegación; si no, la app se queda en la pantalla del splash.
     String next;
-    if (userId == null || userId.isEmpty) {
-      next = '/onboarding';
-    } else {
-      try {
-        final kyc = await repository.getKycStatus();
-        next = kyc.status == KycStatus.verified ? '/home' : '/auth/kyc';
-      } catch (_) {
-        // Sesión inválida o backend caído: vuelve al login.
-        next = '/auth/login';
+    try {
+      final userId = await repository.getStoredUserId();
+      if (userId == null || userId.isEmpty) {
+        next = '/onboarding';
+      } else {
+        try {
+          final kyc = await repository.getKycStatus();
+          next = kyc.status == KycStatus.verified ? '/home' : '/auth/kyc';
+        } catch (_) {
+          // Sesión inválida o backend caído: vuelve al login.
+          next = '/auth/login';
+        }
       }
+    } catch (_) {
+      next = '/onboarding';
     }
 
     await wait;

@@ -39,7 +39,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: '/blank',
+    initialLocation: '/splash',
     refreshListenable: session,
     redirect: (context, state) {
       // 401 definitivo: la sesión expiró → volver a login.
