@@ -30,13 +30,26 @@ class RouteActions {
 
   RoutesRepository get _repo => _ref.read(routesRepositoryProvider);
 
+  Future<String> _requireOwnerId() async {
+    final ownerId = await _ref.read(currentUserIdProvider.future);
+    if (ownerId == null || ownerId.isEmpty) {
+      throw StateError('No hay sesión activa');
+    }
+    return ownerId;
+  }
+
   Future<void> acceptPassenger(String routeId, String passengerId) async {
-    await _repo.acceptPassenger(routeId, passengerId);
+    await _repo.acceptPassenger(routeId, passengerId, await _requireOwnerId());
+    _invalidate(routeId);
+  }
+
+  Future<void> rejectPassenger(String routeId, String passengerId) async {
+    await _repo.rejectPassenger(routeId, passengerId, await _requireOwnerId());
     _invalidate(routeId);
   }
 
   Future<void> removePassenger(String routeId, String passengerId) async {
-    await _repo.removePassenger(routeId, passengerId);
+    await _repo.removePassenger(routeId, passengerId, await _requireOwnerId());
     _invalidate(routeId);
   }
 

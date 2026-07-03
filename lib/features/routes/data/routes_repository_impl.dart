@@ -46,12 +46,28 @@ class RoutesRepositoryImpl implements RoutesRepository {
       });
 
   @override
-  Future<void> acceptPassenger(String routeId, String passengerId) =>
-      _remote.acceptPassenger(routeId, passengerId);
+  Future<void> acceptPassenger(
+    String routeId,
+    String passengerId,
+    String ownerId,
+  ) =>
+      _remote.acceptPassenger(routeId, passengerId, ownerId);
 
   @override
-  Future<void> removePassenger(String routeId, String passengerId) =>
-      _remote.removePassenger(routeId, passengerId);
+  Future<void> rejectPassenger(
+    String routeId,
+    String passengerId,
+    String ownerId,
+  ) =>
+      _remote.rejectPassenger(routeId, passengerId, ownerId);
+
+  @override
+  Future<void> removePassenger(
+    String routeId,
+    String passengerId,
+    String ownerId,
+  ) =>
+      _remote.removePassenger(routeId, passengerId, ownerId);
 
   @override
   Future<void> startRoute(String id) => _remote.setStatus(id, 'in_progress');

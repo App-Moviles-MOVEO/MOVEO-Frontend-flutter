@@ -15,11 +15,25 @@ abstract class AuthRepository {
     required String phone,
   });
 
-  /// KYC best-effort (sin endpoint dedicado): marca verificación en el usuario.
-  Future<void> submitKyc({required String documentType});
+  /// KYC real: sube los documentos (multipart) del usuario autenticado.
+  /// Devuelve el nuevo estado de verificación (`pending` tras enviarlos).
+  Future<KycStatus> submitKyc({
+    String? dniFrontPath,
+    String? dniBackPath,
+    String? selfiePath,
+  });
 
   /// Estado de verificación del usuario autenticado.
   Future<KycStatusResult> getKycStatus();
+
+  /// Recuperación de contraseña (paso 1): solicita el token de reseteo.
+  Future<ForgotPasswordResult> forgotPassword(String email);
+
+  /// Recuperación de contraseña (paso 2): aplica la nueva clave con el token.
+  Future<void> resetPassword({
+    required String token,
+    required String newPassword,
+  });
 
   Future<UserModel> getUser(String id);
 

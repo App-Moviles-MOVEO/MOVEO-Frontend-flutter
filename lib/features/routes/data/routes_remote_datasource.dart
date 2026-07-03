@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:wheelspe_provider/core/constants/api_constants.dart';
-import 'package:wheelspe_provider/core/errors/exceptions.dart';
 import 'package:wheelspe_provider/core/network/dio_client.dart';
 import 'package:wheelspe_provider/features/routes/data/route_model.dart';
 
@@ -79,16 +78,71 @@ class RoutesRemoteDataSource {
     }
   }
 
-  // El backend NO tiene gestión de pasajeros (aprobar/rechazar/listar):
-  // `/adventure-routes/{id}/book` solo descuenta cupos. Se expone un error
-  // claro para que la UI lo informe en vez de fallar silenciosamente.
-  Future<void> acceptPassenger(String routeId, String passengerId) async =>
-      throw const ServerException(
-        'El backend aún no soporta aprobar pasajeros (solo reservar asiento).',
+  /// Lista los pasajeros/solicitudes de una ruta (requiere `ownerId`).
+  /// Endpoint dedicado; el detalle de la ruta también embebe `passengers`.
+  Future<List<RoutePassenger>> getPassengers(
+    String routeId,
+    String ownerId,
+  ) async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        ApiConstants.routePassengers(routeId),
+        queryParameters: {'ownerId': ownerId},
       );
+      final list = (response.data?['passengers'] as List?)
+              ?.cast<Map<String, dynamic>>() ??
+          const <Map<String, dynamic>>[];
+      return list.map(RoutePassenger.fromJson).toList();
+    } on DioException catch (e) {
+      throwAsAppException(e);
+    }
+  }
 
-  Future<void> removePassenger(String routeId, String passengerId) async =>
-      throw const ServerException(
-        'El backend aún no soporta quitar pasajeros.',
+  /// Acepta una solicitud → CONFIRMED (descuenta cupo).
+  Future<void> acceptPassenger(
+    String routeId,
+    String passengerId,
+    String ownerId,
+  ) async {
+    try {
+      await _dio.post<dynamic>(
+        ApiConstants.routePassengerAccept(routeId, passengerId),
+        queryParameters: {'ownerId': ownerId},
       );
+    } on DioException catch (e) {
+      throwAsAppException(e);
+    }
+  }
+
+  /// Rechaza una solicitud pendiente → REJECTED (libera cupo tentativo).
+  Future<void> rejectPassenger(
+    String routeId,
+    String passengerId,
+    String ownerId,
+  ) async {
+    try {
+      await _dio.post<dynamic>(
+        ApiConstants.routePassengerReject(routeId, passengerId),
+        queryParameters: {'ownerId': ownerId},
+      );
+    } on DioException catch (e) {
+      throwAsAppException(e);
+    }
+  }
+
+  /// Quita a un pasajero confirmado → CANCELLED (libera cupo).
+  Future<void> removePassenger(
+    String routeId,
+    String passengerId,
+    String ownerId,
+  ) async {
+    try {
+      await _dio.delete<dynamic>(
+        ApiConstants.routePassenger(routeId, passengerId),
+        queryParameters: {'ownerId': ownerId},
+      );
+    } on DioException catch (e) {
+      throwAsAppException(e);
+    }
+  }
 }

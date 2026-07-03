@@ -51,9 +51,18 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<void> submitKyc({required String documentType}) async {
+  Future<KycStatus> submitKyc({
+    String? dniFrontPath,
+    String? dniBackPath,
+    String? selfiePath,
+  }) async {
     final userId = await _requireUserId();
-    await _remote.submitKyc(userId: userId, documentType: documentType);
+    return _remote.submitKyc(
+      userId: userId,
+      dniFrontPath: dniFrontPath,
+      dniBackPath: dniBackPath,
+      selfiePath: selfiePath,
+    );
   }
 
   @override
@@ -61,6 +70,17 @@ class AuthRepositoryImpl implements AuthRepository {
     final userId = await _requireUserId();
     return _remote.getKycStatus(userId);
   }
+
+  @override
+  Future<ForgotPasswordResult> forgotPassword(String email) =>
+      _remote.forgotPassword(email);
+
+  @override
+  Future<void> resetPassword({
+    required String token,
+    required String newPassword,
+  }) =>
+      _remote.resetPassword(token: token, newPassword: newPassword);
 
   @override
   Future<UserModel> getUser(String id) => _remote.getUser(id);

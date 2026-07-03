@@ -23,40 +23,58 @@ enum RouteStatus {
 
 enum PassengerStatus {
   pending,
-  confirmed;
+  confirmed,
+  rejected,
+  cancelled;
 
   static PassengerStatus fromString(String? value) =>
-      value?.toUpperCase() == 'CONFIRMED'
-          ? PassengerStatus.confirmed
-          : PassengerStatus.pending;
+      switch (value?.toUpperCase()) {
+        'CONFIRMED' || 'ACCEPTED' => PassengerStatus.confirmed,
+        'REJECTED' => PassengerStatus.rejected,
+        'CANCELLED' || 'CANCELED' || 'REMOVED' => PassengerStatus.cancelled,
+        _ => PassengerStatus.pending,
+      };
 }
 
 class RoutePassenger {
+  /// Id de la **solicitud** (RoutePassenger), distinto del id del usuario.
   final String id;
+
+  /// Id del **usuario** pasajero. Es el que usan los endpoints
+  /// `.../passengers/{passengerId}/accept|reject` y el DELETE.
+  final String passengerId;
   final String name;
   final String? avatarUrl;
   final double rating;
   final bool verified;
   final PassengerStatus status;
+  final int seats;
 
   const RoutePassenger({
     required this.id,
+    required this.passengerId,
     required this.name,
     this.avatarUrl,
     this.rating = 0,
     this.verified = false,
     this.status = PassengerStatus.pending,
+    this.seats = 1,
   });
 
-  factory RoutePassenger.fromJson(Map<String, dynamic> json) =>
-      RoutePassenger(
-        id: json['id']?.toString() ?? json['passengerId']?.toString() ?? '',
-        name: (json['fullName'] ?? json['name'] ?? '') as String,
-        avatarUrl: json['avatarUrl'] as String?,
-        rating: (json['reputation'] as num?)?.toDouble() ?? 0,
-        verified: json['verificationStatus'] == 'VERIFIED',
-        status: PassengerStatus.fromString(json['status'] as String?),
-      );
+  factory RoutePassenger.fromJson(Map<String, dynamic> json) {
+    final passengerId =
+        json['passengerId']?.toString() ?? json['id']?.toString() ?? '';
+    return RoutePassenger(
+      id: json['id']?.toString() ?? passengerId,
+      passengerId: passengerId,
+      name: (json['fullName'] ?? json['name'] ?? '') as String,
+      avatarUrl: json['avatarUrl'] as String?,
+      rating: (json['reputation'] as num?)?.toDouble() ?? 0,
+      verified: json['verificationStatus'] == 'VERIFIED',
+      status: PassengerStatus.fromString(json['status'] as String?),
+      seats: (json['seats'] as num?)?.toInt() ?? 1,
+    );
+  }
 }
 
 class RouteModel {

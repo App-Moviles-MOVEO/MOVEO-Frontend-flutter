@@ -78,9 +78,18 @@ class UserModel {
 
     final status = (json['verificationStatus'] ?? json['kycStatus']) as String?;
 
+    // El backend real devuelve firstName + lastName por separado; los unimos
+    // si no viene un fullName/name ya armado.
+    final composedName = [
+      json['firstName']?.toString() ?? '',
+      json['lastName']?.toString() ?? '',
+    ].where((s) => s.isNotEmpty).join(' ');
+    final fullName =
+        (json['fullName'] ?? json['name']) as String? ?? composedName;
+
     return UserModel(
       id: json['id']?.toString() ?? json['userId']?.toString() ?? '',
-      fullName: (json['fullName'] ?? json['name'] ?? '') as String,
+      fullName: fullName,
       email: (json['email'] ?? '') as String,
       phone: (json['phone'] ?? json['phoneNumber'] ?? '') as String,
       role: (json['role'] ?? 'owner') as String,
@@ -130,6 +139,23 @@ enum KycStatus {
       };
 }
 
+/// Resultado del paso "olvidé mi contraseña".
+///
+/// El backend responde SIEMPRE 200; en desarrollo incluye `resetToken` para
+/// poder completar el reseteo sin servidor de correo.
+class ForgotPasswordResult {
+  final String message;
+  final String? resetToken;
+
+  const ForgotPasswordResult({required this.message, this.resetToken});
+
+  factory ForgotPasswordResult.fromJson(Map<String, dynamic> json) =>
+      ForgotPasswordResult(
+        message: (json['message'] ?? '') as String,
+        resetToken: json['resetToken'] as String?,
+      );
+}
+
 /// Estado de verificación derivado de los flags del usuario.
 ///
 /// El backend NO tiene flujo KYC dedicado; se reconstruye a partir de
@@ -152,10 +178,13 @@ class KycStatusResult {
       return const KycStatusResult(status: KycStatus.verified, submitted: true);
     }
     final status = KycStatus.fromString(user.verificationStatus);
+    // `not_submitted` → aún hay que subir documentos (mostrar formulario).
+    // `pending`/`in_review`/`submitted` → ya enviados, en revisión.
+    final raw = user.verificationStatus.toUpperCase();
+    final notSubmitted = raw == 'NOT_SUBMITTED' || raw.isEmpty;
     return KycStatusResult(
       status: status,
-      submitted: status != KycStatus.pending ||
-          user.verificationStatus.toUpperCase() == 'IN_REVIEW',
+      submitted: status != KycStatus.pending || !notSubmitted,
     );
   }
 }

@@ -19,9 +19,23 @@ abstract class RoutesRepository {
     String notes,
   });
 
-  Future<void> acceptPassenger(String routeId, String passengerId);
+  Future<void> acceptPassenger(
+    String routeId,
+    String passengerId,
+    String ownerId,
+  );
 
-  Future<void> removePassenger(String routeId, String passengerId);
+  Future<void> rejectPassenger(
+    String routeId,
+    String passengerId,
+    String ownerId,
+  );
+
+  Future<void> removePassenger(
+    String routeId,
+    String passengerId,
+    String ownerId,
+  );
 
   Future<void> startRoute(String id);
 

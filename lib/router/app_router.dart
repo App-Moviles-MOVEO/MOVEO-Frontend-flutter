@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wheelspe_provider/core/network/dio_client.dart';
+import 'package:wheelspe_provider/features/auth/presentation/forgot_password_screen.dart';
 import 'package:wheelspe_provider/features/auth/presentation/kyc_screen.dart';
 import 'package:wheelspe_provider/features/auth/presentation/login_screen.dart';
 import 'package:wheelspe_provider/features/auth/presentation/onboarding_screen.dart';
@@ -72,6 +73,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/auth/register',
         builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: '/auth/forgot-password',
+        builder: (context, state) => const ForgotPasswordScreen(),
       ),
       GoRoute(
         path: '/auth/kyc',

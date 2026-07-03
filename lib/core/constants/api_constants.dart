@@ -20,6 +20,9 @@ class ApiConstants {
   static const String logout = '/auth/logout';
   static const String me = '/auth/me';
   static const String changePassword = '/auth/change-password';
+  static const String kyc = '/auth/kyc';
+  static const String forgotPassword = '/auth/forgot-password';
+  static const String resetPassword = '/auth/reset-password';
 
   // Usuarios — /users
   static const String users = '/users';
@@ -41,6 +44,14 @@ class ApiConstants {
   static const String routes = '/adventure-routes';
   static String routeById(String id) => '/adventure-routes/$id';
   static String routeBook(String id) => '/adventure-routes/$id/book';
+  static String routePassengers(String routeId) =>
+      '/adventure-routes/$routeId/passengers';
+  static String routePassenger(String routeId, String passengerId) =>
+      '/adventure-routes/$routeId/passengers/$passengerId';
+  static String routePassengerAccept(String routeId, String passengerId) =>
+      '/adventure-routes/$routeId/passengers/$passengerId/accept';
+  static String routePassengerReject(String routeId, String passengerId) =>
+      '/adventure-routes/$routeId/passengers/$passengerId/reject';
 
   // Pagos — /Payments
   static const String payments = '/Payments';

@@ -182,6 +182,78 @@ abstract class AppLocalizations {
   /// **'Iniciar sesión'**
   String get loginButton;
 
+  /// No description provided for @forgotPasswordLink.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Olvidaste tu contraseña?'**
+  String get forgotPasswordLink;
+
+  /// No description provided for @forgotPasswordTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Recuperar contraseña'**
+  String get forgotPasswordTitle;
+
+  /// No description provided for @forgotPasswordSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña'**
+  String get forgotPasswordSubtitle;
+
+  /// No description provided for @forgotPasswordSend.
+  ///
+  /// In es, this message translates to:
+  /// **'Enviar enlace'**
+  String get forgotPasswordSend;
+
+  /// No description provided for @forgotPasswordSent.
+  ///
+  /// In es, this message translates to:
+  /// **'Si existe una cuenta con ese correo, te enviamos un enlace de recuperación'**
+  String get forgotPasswordSent;
+
+  /// No description provided for @resetPasswordTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva contraseña'**
+  String get resetPasswordTitle;
+
+  /// No description provided for @resetPasswordSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingresa el token que recibiste y tu nueva contraseña'**
+  String get resetPasswordSubtitle;
+
+  /// No description provided for @resetTokenLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Token de recuperación'**
+  String get resetTokenLabel;
+
+  /// No description provided for @newPasswordLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva contraseña'**
+  String get newPasswordLabel;
+
+  /// No description provided for @resetPasswordButton.
+  ///
+  /// In es, this message translates to:
+  /// **'Restablecer contraseña'**
+  String get resetPasswordButton;
+
+  /// No description provided for @resetPasswordSuccess.
+  ///
+  /// In es, this message translates to:
+  /// **'Contraseña restablecida. Inicia sesión con tu nueva clave'**
+  String get resetPasswordSuccess;
+
+  /// No description provided for @backToLogin.
+  ///
+  /// In es, this message translates to:
+  /// **'Volver a iniciar sesión'**
+  String get backToLogin;
+
   /// No description provided for @noAccountQuestion.
   ///
   /// In es, this message translates to:

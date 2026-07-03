@@ -100,7 +100,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   loading: loading,
                   onPressed: _submit,
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 4),
+                Center(
+                  child: Semantics(
+                    label: l10n.forgotPasswordLink,
+                    button: true,
+                    child: TextButton(
+                      onPressed: () => context.go('/auth/forgot-password'),
+                      child: Text(l10n.forgotPasswordLink),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
                 Center(
                   child: Semantics(
                     label: l10n.noAccountQuestion,

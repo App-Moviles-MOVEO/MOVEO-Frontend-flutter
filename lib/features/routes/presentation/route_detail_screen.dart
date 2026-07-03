@@ -371,7 +371,7 @@ class _RouteDetailBodyState extends ConsumerState<_RouteDetailBody> {
                 await _run(
                   () => ref.read(routeActionsProvider).ratePassenger(
                         raterId: raterId,
-                        rateeId: passenger.id,
+                        rateeId: passenger.passengerId,
                         score: score,
                         comment: commentController.text.trim(),
                       ),
@@ -554,7 +554,7 @@ class _PassengerTileState extends ConsumerState<PassengerTile> {
                 onPressed: () => _run(
                   () => actions.acceptPassenger(
                     widget.routeId,
-                    passenger.id,
+                    passenger.passengerId,
                   ),
                 ),
               ),
@@ -569,9 +569,9 @@ class _PassengerTileState extends ConsumerState<PassengerTile> {
                   size: 30,
                 ),
                 onPressed: () => _run(
-                  () => actions.removePassenger(
+                  () => actions.rejectPassenger(
                     widget.routeId,
-                    passenger.id,
+                    passenger.passengerId,
                   ),
                 ),
               ),
@@ -590,7 +590,7 @@ class _PassengerTileState extends ConsumerState<PassengerTile> {
                 onPressed: () => _run(
                   () => actions.removePassenger(
                     widget.routeId,
-                    passenger.id,
+                    passenger.passengerId,
                   ),
                 ),
               ),
