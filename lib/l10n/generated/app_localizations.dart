@@ -380,6 +380,12 @@ abstract class AppLocalizations {
   /// **'Enviar documentos'**
   String get kycSubmit;
 
+  /// No description provided for @kycSkipForTesting.
+  ///
+  /// In es, this message translates to:
+  /// **'Saltar verificación (modo prueba)'**
+  String get kycSkipForTesting;
+
   /// No description provided for @kycReviewTime.
   ///
   /// In es, this message translates to:

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wheelspe_provider/core/constants/app_text_styles.dart';
+import 'package:wheelspe_provider/core/storage/local_storage.dart';
 import 'package:wheelspe_provider/core/utils/validators.dart';
 import 'package:wheelspe_provider/features/auth/data/auth_models.dart';
 import 'package:wheelspe_provider/features/auth/presentation/auth_providers.dart';
@@ -42,6 +43,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!ok) {
       final error = ref.read(authControllerProvider).error;
       if (error != null) showErrorSnackBar(context, error);
+      return;
+    }
+
+    // Bypass de KYC en modo prueba: entra directo al home.
+    if (ref.read(localStorageProvider).kycDevBypass) {
+      context.go('/home');
       return;
     }
 

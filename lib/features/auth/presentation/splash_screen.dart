@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wheelspe_provider/core/constants/app_colors.dart';
 import 'package:wheelspe_provider/core/constants/app_text_styles.dart';
+import 'package:wheelspe_provider/core/storage/local_storage.dart';
 import 'package:wheelspe_provider/features/auth/data/auth_models.dart';
 import 'package:wheelspe_provider/features/auth/presentation/auth_providers.dart';
 
@@ -41,6 +42,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       final userId = await repository.getStoredUserId();
       if (userId == null || userId.isEmpty) {
         next = '/onboarding';
+      } else if (ref.read(localStorageProvider).kycDevBypass) {
+        // Bypass de KYC activado en modo prueba.
+        next = '/home';
       } else {
         try {
           final kyc = await repository.getKycStatus();

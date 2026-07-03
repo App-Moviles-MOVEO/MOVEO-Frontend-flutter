@@ -160,6 +160,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get kycSubmit => 'Enviar documentos';
 
   @override
+  String get kycSkipForTesting => 'Saltar verificación (modo prueba)';
+
+  @override
   String get kycReviewTime => 'La verificación toma 24-48 horas';
 
   @override

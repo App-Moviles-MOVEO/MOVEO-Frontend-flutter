@@ -47,6 +47,7 @@
   "kycUploadFront": "Subir DNI frontal",
   "kycUploadBack": "Subir DNI posterior",
   "kycSubmit": "Enviar documentos",
+  "kycSkipForTesting": "Saltar verificación (modo prueba)",
   "kycReviewTime": "La verificación toma 24-48 horas",
   "kycInReview": "Tus documentos están en revisión",
   "kycRejected": "Verificación rechazada",

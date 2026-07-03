@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:wheelspe_provider/core/constants/app_colors.dart';
 import 'package:wheelspe_provider/core/constants/app_text_styles.dart';
+import 'package:wheelspe_provider/core/storage/local_storage.dart';
 import 'package:wheelspe_provider/core/utils/platform_utils.dart';
 import 'package:wheelspe_provider/features/auth/data/auth_models.dart';
 import 'package:wheelspe_provider/features/auth/presentation/auth_providers.dart';
@@ -92,6 +93,13 @@ class _KycScreenState extends ConsumerState<KycScreen> {
     if (mounted) context.go('/auth/login');
   }
 
+  /// Bypass solo para pruebas: entra al home sin esperar la aprobación manual
+  /// del KYC. Persiste el flag para no rebotar al KYC en cada arranque.
+  Future<void> _skipForTesting() async {
+    await ref.read(localStorageProvider).setKycDevBypass(true);
+    if (mounted) context.go('/home');
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -140,7 +148,10 @@ class _KycScreenState extends ConsumerState<KycScreen> {
             );
           }
           if (_justSubmitted || (kyc.submitted && !_retrying)) {
-            return _InReviewView(onLogout: _logout);
+            return _InReviewView(
+              onLogout: _logout,
+              onSkip: _skipForTesting,
+            );
           }
           return _buildForm(l10n);
         },
@@ -182,6 +193,14 @@ class _KycScreenState extends ConsumerState<KycScreen> {
             label: l10n.kycSubmit,
             loading: _uploading,
             onPressed: canSubmit ? _submit : null,
+          ),
+          const SizedBox(height: 12),
+          Center(
+            child: TextButton.icon(
+              onPressed: _skipForTesting,
+              icon: const Icon(Icons.fast_forward, size: 18),
+              label: Text(l10n.kycSkipForTesting),
+            ),
           ),
         ],
       ),
@@ -246,8 +265,9 @@ class _DocumentSlot extends StatelessWidget {
 
 class _InReviewView extends StatelessWidget {
   final VoidCallback onLogout;
+  final VoidCallback onSkip;
 
-  const _InReviewView({required this.onLogout});
+  const _InReviewView({required this.onLogout, required this.onSkip});
 
   @override
   Widget build(BuildContext context) {
@@ -288,6 +308,12 @@ class _InReviewView extends StatelessWidget {
               label: l10n.logout,
               variant: WheelsPeButtonVariant.secondary,
               onPressed: onLogout,
+            ),
+            const SizedBox(height: 12),
+            TextButton.icon(
+              onPressed: onSkip,
+              icon: const Icon(Icons.fast_forward, size: 18),
+              label: Text(l10n.kycSkipForTesting),
             ),
           ],
         ),

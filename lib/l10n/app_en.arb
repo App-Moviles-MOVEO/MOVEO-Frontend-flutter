@@ -47,6 +47,7 @@
   "kycUploadFront": "Upload front of ID",
   "kycUploadBack": "Upload back of ID",
   "kycSubmit": "Submit documents",
+  "kycSkipForTesting": "Skip verification (test mode)",
   "kycReviewTime": "Verification takes 24-48 hours",
   "kycInReview": "Your documents are under review",
   "kycRejected": "Verification rejected",

@@ -9,6 +9,7 @@ class LocalStorageKeys {
 
   static const String locale = 'locale';
   static const String onboardingSeen = 'onboarding_seen';
+  static const String kycDevBypass = 'kyc_dev_bypass';
 
   static String checklist(String reservationId, String tipo) =>
       'checklist_${reservationId}_$tipo';
@@ -31,6 +32,15 @@ class LocalStorageService {
 
   Future<void> setOnboardingSeen() =>
       _prefs.setBool(LocalStorageKeys.onboardingSeen, true);
+
+  /// Bypass de KYC solo para pruebas: permite entrar al home sin verificación
+  /// aprobada por un admin. Persistido para que el usuario no rebote al KYC
+  /// en cada arranque mientras prueba el flujo.
+  bool get kycDevBypass =>
+      _prefs.getBool(LocalStorageKeys.kycDevBypass) ?? false;
+
+  Future<void> setKycDevBypass(bool value) =>
+      _prefs.setBool(LocalStorageKeys.kycDevBypass, value);
 
   /// Guarda el checklist fotográfico como mapa punto → ruta de archivo local.
   Future<void> saveChecklist(

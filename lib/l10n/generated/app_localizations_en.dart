@@ -157,6 +157,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get kycSubmit => 'Submit documents';
 
   @override
+  String get kycSkipForTesting => 'Skip verification (test mode)';
+
+  @override
   String get kycReviewTime => 'Verification takes 24-48 hours';
 
   @override
