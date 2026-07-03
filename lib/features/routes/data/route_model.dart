@@ -140,10 +140,16 @@ class RouteModel {
     }
     return RouteModel(
       id: json['id']?.toString() ?? '',
-      origin: (json['origin'] ?? '') as String,
-      destination: (json['destination'] ?? '') as String,
-      originLat: (json['originLat'] as num?)?.toDouble(),
-      originLng: (json['originLng'] as num?)?.toDouble(),
+      // El backend real usa startLocation/endLocation; mantenemos
+      // origin/destination por tolerancia.
+      origin:
+          (json['startLocation'] ?? json['origin'] ?? '') as String,
+      destination:
+          (json['endLocation'] ?? json['destination'] ?? '') as String,
+      originLat:
+          ((json['lat'] ?? json['originLat']) as num?)?.toDouble(),
+      originLng:
+          ((json['lng'] ?? json['originLng']) as num?)?.toDouble(),
       destLat: (json['destLat'] as num?)?.toDouble(),
       destLng: (json['destLng'] as num?)?.toDouble(),
       departureDateTime: departure,

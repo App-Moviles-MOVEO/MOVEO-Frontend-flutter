@@ -6,12 +6,14 @@
 class ApiConstants {
   ApiConstants._();
 
-  /// Base URL. Por defecto apunta al backend local desde el emulador Android
-  /// (`10.0.2.2` = `localhost` del host). Sobrescribir al compilar con:
-  /// `--dart-define=WHEELSPE_API_URL=http://localhost:8080/api/v1`
+  /// Base URL. Por defecto apunta al **backend real desplegado en Railway**.
+  /// Sobrescribir al compilar para usar un backend local, p. ej.:
+  /// `--dart-define=WHEELSPE_API_URL=http://10.0.2.2:8080/api/v1` (emulador
+  /// Android) o `http://localhost:8080/api/v1` (web/desktop).
   static const String baseUrl = String.fromEnvironment(
     'WHEELSPE_API_URL',
-    defaultValue: 'http://10.0.2.2:8080/api/v1',
+    defaultValue:
+        'https://successful-recreation-production-7377.up.railway.app/api/v1',
   );
 
   // Auth — /auth

@@ -97,7 +97,11 @@ class ReservationModel {
       renterVerified: renterVerified,
       startDate: _date(json['startDate']) ?? DateTime.now(),
       endDate: _date(json['endDate']) ?? DateTime.now(),
-      totalAmount: (json['totalAmount'] as num?)?.toDouble() ?? 0,
+      // El backend real usa `totalPrice`; mantenemos `totalAmount` por
+      // tolerancia con contratos anteriores.
+      totalAmount:
+          ((json['totalPrice'] ?? json['totalAmount']) as num?)?.toDouble() ??
+              0,
       deposit: (json['deposit'] as num?)?.toDouble() ?? 0,
       status: ReservationStatus.fromString(json['status'] as String?),
       createdAt: _date(json['createdAt']),

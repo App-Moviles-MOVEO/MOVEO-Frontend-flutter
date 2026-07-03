@@ -29,11 +29,18 @@ class RoutesRepositoryImpl implements RoutesRepository {
     String notes = '',
   }) =>
       _remote.createRoute({
-        'ownerId': ownerId,
-        'type': 'carpool',
+        'ownerId': int.tryParse(ownerId) ?? ownerId,
+        // CreateAdventureRouteResource del backend real: name/title/
+        // startLocation/endLocation + campos obligatorios de aventura.
+        'name': '$origin → $destination',
         'title': '$origin → $destination',
-        'origin': origin,
-        'destination': destination,
+        'description': notes.isNotEmpty ? notes : 'Carpool $origin → $destination',
+        'startLocation': origin,
+        'endLocation': destination,
+        'type': 'carpool',
+        'duration': 1,
+        'difficulty': 'easy',
+        'estimatedCost': pricePerSeat,
         'departureDate': DateFormat('yyyy-MM-dd').format(departureDate),
         'departureTime': departureTime,
         'seatsTotal': availableSeats,
@@ -41,8 +48,6 @@ class RoutesRepositoryImpl implements RoutesRepository {
         'pricePerSeat': pricePerSeat,
         'onlyWomen': womenOnly,
         if (institutionalFilter) 'community': 'UPC',
-        if (notes.isNotEmpty) 'description': notes,
-        'status': 'active',
       });
 
   @override

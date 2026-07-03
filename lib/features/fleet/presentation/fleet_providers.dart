@@ -110,8 +110,13 @@ class VehicleActions {
   }
 
   Future<VehicleModel> publish(VehicleModel vehicle) async {
-    final created =
-        await _ref.read(fleetRepositoryProvider).publishVehicle(vehicle);
+    final ownerId = await _ref.read(currentUserIdProvider.future);
+    if (ownerId == null || ownerId.isEmpty) {
+      throw StateError('No hay sesión activa');
+    }
+    final created = await _ref
+        .read(fleetRepositoryProvider)
+        .publishVehicle(vehicle, ownerId);
     _ref.invalidate(myVehiclesProvider);
     return created;
   }

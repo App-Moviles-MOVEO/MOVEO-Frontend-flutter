@@ -17,8 +17,8 @@ class FleetRepositoryImpl implements FleetRepository {
   Future<VehicleModel> getVehicle(String id) => _remote.getVehicle(id);
 
   @override
-  Future<VehicleModel> publishVehicle(VehicleModel vehicle) =>
-      _remote.createVehicle(vehicle.toCreateJson());
+  Future<VehicleModel> publishVehicle(VehicleModel vehicle, String ownerId) =>
+      _remote.createVehicle(vehicle.toCreateJson(ownerId));
 
   @override
   Future<void> updateVehicle(String id, Map<String, dynamic> changes) =>

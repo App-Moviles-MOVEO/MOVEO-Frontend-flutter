@@ -94,19 +94,32 @@ class VehicleModel {
     );
   }
 
-  /// Cuerpo para POST /vehicles (CreateVehicleResource).
-  Map<String, dynamic> toCreateJson() => {
+  /// Cuerpo para POST /vehicles (CreateVehicleResource del backend real).
+  ///
+  /// El backend exige `ownerId`, `licensePlate`, `dailyPrice`, `images` y un
+  /// objeto `location {district,address,lat,lng}`. Los campos que el formulario
+  /// no captura (color/transmission/fuelType/seats) se envían con defaults
+  /// razonables para que el vehículo quede utilizable.
+  Map<String, dynamic> toCreateJson(String ownerId) => {
+        'ownerId': int.tryParse(ownerId) ?? ownerId,
         'brand': brand,
         'model': model,
         'year': year,
-        'plate': plate,
-        'bodyType': category,
-        'pricePerDay': pricePerDay,
+        'color': 'No especificado',
+        'transmission': 'manual',
+        'fuelType': 'gasoline',
+        'seats': 5,
+        'licensePlate': plate,
+        'location': {
+          'district': address,
+          'address': address,
+          'lat': lat,
+          'lng': lng,
+        },
+        'dailyPrice': pricePerDay,
+        'depositAmount': 0,
         'description': description,
-        'lat': lat,
-        'lng': lng,
-        'district': address,
-        'photos': photos,
-        'status': 'active',
+        'images': photos,
+        'bodyType': category,
       };
 }

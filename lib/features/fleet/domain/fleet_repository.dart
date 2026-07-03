@@ -8,7 +8,7 @@ abstract class FleetRepository {
 
   Future<VehicleModel> getVehicle(String id);
 
-  Future<VehicleModel> publishVehicle(VehicleModel vehicle);
+  Future<VehicleModel> publishVehicle(VehicleModel vehicle, String ownerId);
 
   Future<void> updateVehicle(String id, Map<String, dynamic> changes);
 
