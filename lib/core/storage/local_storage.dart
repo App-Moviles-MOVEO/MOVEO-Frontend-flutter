@@ -13,6 +13,8 @@ class LocalStorageKeys {
 
   static String checklist(String reservationId, String tipo) =>
       'checklist_${reservationId}_$tipo';
+
+  static String vehicleDocs(String vehicleId) => 'vehicle_docs_$vehicleId';
 }
 
 /// Wrapper sobre shared_preferences para preferencias de usuario
@@ -55,6 +57,21 @@ class LocalStorageService {
 
   Map<String, String> loadChecklist(String reservationId, String tipo) {
     final raw = _prefs.getString(LocalStorageKeys.checklist(reservationId, tipo));
+    if (raw == null) return {};
+    return Map<String, String>.from(jsonDecode(raw) as Map);
+  }
+
+  /// Documentos de propiedad del vehículo (US05) como mapa
+  /// tipo de documento → ruta de archivo local. El backend aún no los
+  /// persiste, así que esta es la copia de referencia del proveedor.
+  Future<void> saveVehicleDocs(String vehicleId, Map<String, String> docs) =>
+      _prefs.setString(
+        LocalStorageKeys.vehicleDocs(vehicleId),
+        jsonEncode(docs),
+      );
+
+  Map<String, String> loadVehicleDocs(String vehicleId) {
+    final raw = _prefs.getString(LocalStorageKeys.vehicleDocs(vehicleId));
     if (raw == null) return {};
     return Map<String, String>.from(jsonDecode(raw) as Map);
   }

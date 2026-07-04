@@ -380,6 +380,9 @@ class AppLocalizationsEs extends AppLocalizations {
       'Sube la tarjeta de propiedad (ambas caras) y el SOAT';
 
   @override
+  String get documentsSaved => 'Documentos guardados';
+
+  @override
   String documentsCount(int current, int total) {
     return '$current/$total documentos';
   }
@@ -608,6 +611,22 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get noPassengersYet => 'Aún no hay pasajeros en esta ruta';
+
+  @override
+  String passengerFallback(String id) {
+    return 'Pasajero #$id';
+  }
+
+  @override
+  String unregisteredSeats(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count asientos reservados sin datos del pasajero',
+      one: '1 asiento reservado sin datos del pasajero',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get transactionsTitle => 'Mis cobros';

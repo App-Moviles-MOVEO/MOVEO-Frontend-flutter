@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart' show DateTimeRange;
 import 'package:wheelspe_provider/core/constants/api_constants.dart';
 import 'package:wheelspe_provider/core/network/dio_client.dart';
+import 'package:wheelspe_provider/features/auth/data/auth_models.dart';
 import 'package:wheelspe_provider/features/fleet/data/reservation_model.dart';
 import 'package:wheelspe_provider/features/fleet/data/vehicle_model.dart';
 
@@ -114,6 +115,18 @@ class FleetRemoteDataSource {
         queryParameters: {'ownerId': ownerId},
       );
       return _asList(response.data).map(ReservationModel.fromJson).toList();
+    } on DioException catch (e) {
+      throwAsAppException(e);
+    }
+  }
+
+  /// Perfil de un usuario (para resolver los datos del arrendatario,
+  /// que /rentals solo referencia por `renterId`).
+  Future<UserModel> getUser(String id) async {
+    try {
+      final response =
+          await _dio.get<Map<String, dynamic>>(ApiConstants.userById(id));
+      return UserModel.fromJson(response.data ?? {});
     } on DioException catch (e) {
       throwAsAppException(e);
     }

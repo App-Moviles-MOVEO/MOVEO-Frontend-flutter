@@ -69,6 +69,34 @@ class ReservationModel {
     return days <= 0 ? 1 : days;
   }
 
+  /// Copia con los datos del arrendatario resueltos vía `GET /users/{id}`
+  /// (el backend de rentals solo devuelve `renterId`).
+  ReservationModel copyWith({
+    String? renterName,
+    String? renterAvatar,
+    double? renterRating,
+    bool? renterVerified,
+  }) =>
+      ReservationModel(
+        id: id,
+        vehicleId: vehicleId,
+        vehicleName: vehicleName,
+        renterId: renterId,
+        renterName: renterName ?? this.renterName,
+        renterAvatar: renterAvatar ?? this.renterAvatar,
+        renterRating: renterRating ?? this.renterRating,
+        renterVerified: renterVerified ?? this.renterVerified,
+        startDate: startDate,
+        endDate: endDate,
+        totalAmount: totalAmount,
+        deposit: deposit,
+        status: status,
+        createdAt: createdAt,
+        confirmedAt: confirmedAt,
+        startedAt: startedAt,
+        completedAt: completedAt,
+      );
+
   static DateTime? _date(dynamic value) =>
       value == null ? null : DateTime.tryParse(value.toString());
 

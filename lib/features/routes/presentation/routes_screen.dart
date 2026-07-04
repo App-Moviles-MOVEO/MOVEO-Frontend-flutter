@@ -120,9 +120,9 @@ class RouteCard extends StatelessWidget {
       RouteStatus.completed => l10n.statusCompleted,
       RouteStatus.cancelled => l10n.statusCancelled,
     };
-    final occupancy = route.availableSeats == 0
+    final occupancy = route.seatCapacity == 0
         ? 0.0
-        : route.confirmedSeats / route.availableSeats;
+        : route.occupiedSeats / route.seatCapacity;
 
     return WheelsPeCard(
       glow: route.status == RouteStatus.inProgress,
@@ -190,8 +190,8 @@ class RouteCard extends StatelessWidget {
                   children: [
                     Text(
                       l10n.seatsOccupied(
-                        route.confirmedSeats,
-                        route.availableSeats,
+                        route.occupiedSeats,
+                        route.seatCapacity,
                       ),
                       style: AppTextStyles.caption,
                     ),

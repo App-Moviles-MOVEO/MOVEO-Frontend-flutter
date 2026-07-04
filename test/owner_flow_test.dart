@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wheelspe_provider/features/auth/data/auth_models.dart';
+import 'package:wheelspe_provider/features/fleet/data/reservation_model.dart';
 import 'package:wheelspe_provider/features/fleet/data/vehicle_model.dart';
 import 'package:wheelspe_provider/features/routes/data/route_model.dart';
 
@@ -109,6 +110,92 @@ void main() {
       expect(route.pendingPassengers.length, 1);
       expect(route.confirmedPassengers.length, 1);
       expect(route.confirmedSeats, 1);
+    });
+  });
+
+  group('RouteModel contador de asientos (seatsTotal/seatsAvailable)', () {
+    test('ocupados = total − disponibles aunque no venga passengers', () {
+      // Contrato real del listado: passengers null, el backend descuenta
+      // seatsAvailable con cada reserva.
+      final route = RouteModel.fromJson({
+        'id': 2,
+        'seatsTotal': 5,
+        'seatsAvailable': 2,
+        'pricePerSeat': 30,
+      });
+      expect(route.occupiedSeats, 3);
+      expect(route.seatCapacity, 5);
+      expect(route.earnings, 90);
+    });
+
+    test('sin seatsTotal cae a los confirmados registrados', () {
+      final route = RouteModel.fromJson({
+        'id': 3,
+        'availableSeats': 4,
+        'pricePerSeat': 10,
+        'passengers': [
+          {'id': 1, 'passengerId': 'a', 'status': 'CONFIRMED', 'seats': 2},
+        ],
+      });
+      expect(route.seatCapacity, 4);
+      expect(route.occupiedSeats, 2);
+    });
+
+    test('detecta asientos reservados sin pasajero registrado', () {
+      // Ruta 2 real: 3 ocupados y passengers vacío → 3 sin registro.
+      final route = RouteModel.fromJson({
+        'id': 2,
+        'seatsTotal': 5,
+        'seatsAvailable': 2,
+        'passengers': <Map<String, dynamic>>[],
+      });
+      expect(route.unregisteredSeats, 3);
+
+      // Con un confirmado de 1 asiento quedan 2 sin registro.
+      final withPassenger = RouteModel.fromJson({
+        'id': 2,
+        'seatsTotal': 5,
+        'seatsAvailable': 2,
+        'passengers': [
+          {'id': 1, 'passengerId': 'a', 'status': 'CONFIRMED', 'seats': 1},
+        ],
+      });
+      expect(withPassenger.unregisteredSeats, 2);
+    });
+  });
+
+  group('ReservationModel datos del arrendatario', () {
+    test('fromJson del contrato real deja renterName vacío (solo renterId)',
+        () {
+      final r = ReservationModel.fromJson({
+        'id': 1,
+        'vehicleId': 2,
+        'renterId': 5,
+        'totalPrice': 116.0,
+        'status': 'completed',
+      });
+      expect(r.renterId, '5');
+      expect(r.renterName, isEmpty);
+    });
+
+    test('copyWith enriquece con los datos de GET /users/{id}', () {
+      final base = ReservationModel.fromJson({
+        'id': 1,
+        'vehicleId': 2,
+        'renterId': 5,
+        'totalPrice': 116.0,
+      });
+      final enriched = base.copyWith(
+        renterName: 'esther abigail',
+        renterRating: 4.5,
+        renterVerified: true,
+      );
+      expect(enriched.renterName, 'esther abigail');
+      expect(enriched.renterRating, 4.5);
+      expect(enriched.renterVerified, isTrue);
+      // El resto se conserva.
+      expect(enriched.id, base.id);
+      expect(enriched.totalAmount, 116.0);
     });
   });
 

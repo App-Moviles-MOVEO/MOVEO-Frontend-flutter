@@ -73,9 +73,9 @@ class _RouteDetailBodyState extends ConsumerState<_RouteDetailBody> {
     final l10n = AppLocalizations.of(context);
     final locale = Localizations.localeOf(context).languageCode;
     final actions = ref.read(routeActionsProvider);
-    final occupancy = route.availableSeats == 0
+    final occupancy = route.seatCapacity == 0
         ? 0.0
-        : route.confirmedSeats / route.availableSeats;
+        : route.occupiedSeats / route.seatCapacity;
     final statusLabel = switch (route.status) {
       RouteStatus.scheduled => l10n.statusScheduled,
       RouteStatus.inProgress => l10n.statusInProgress,
@@ -120,8 +120,8 @@ class _RouteDetailBodyState extends ConsumerState<_RouteDetailBody> {
               const SizedBox(height: 12),
               Text(
                 l10n.seatsOccupied(
-                  route.confirmedSeats,
-                  route.availableSeats,
+                  route.occupiedSeats,
+                  route.seatCapacity,
                 ),
                 style: AppTextStyles.caption,
               ),
@@ -176,7 +176,24 @@ class _RouteDetailBodyState extends ConsumerState<_RouteDetailBody> {
             ),
           ],
         ),
-        if (route.passengers.isEmpty)
+        if (route.unregisteredSeats > 0) ...[
+          WheelsPeCard(
+            child: Row(
+              children: [
+                const Icon(Icons.info_outline, color: AppColors.warning),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    l10n.unregisteredSeats(route.unregisteredSeats),
+                    style: AppTextStyles.bodySecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+        ],
+        if (route.passengers.isEmpty && route.unregisteredSeats == 0)
           WheelsPeCard(
             child: Row(
               children: [
@@ -228,8 +245,8 @@ class _RouteDetailBodyState extends ConsumerState<_RouteDetailBody> {
                 const SizedBox(height: 4),
                 Text(
                   l10n.seatsOccupied(
-                    route.confirmedSeats,
-                    route.availableSeats,
+                    route.occupiedSeats,
+                    route.seatCapacity,
                   ),
                   style: AppTextStyles.bodySecondary,
                 ),
@@ -509,15 +526,20 @@ class _PassengerTileState extends ConsumerState<PassengerTile> {
     final passenger = widget.passenger;
     final actions = ref.read(routeActionsProvider);
     final isPending = passenger.status == PassengerStatus.pending;
+    // El backend puede devolver la solicitud sin nombre; mostramos al menos
+    // el id del pasajero en lugar de una fila en blanco.
+    final displayName = passenger.name.isNotEmpty
+        ? passenger.name
+        : l10n.passengerFallback(passenger.passengerId);
 
     return WheelsPeCard(
       padding: const EdgeInsets.all(12),
-      semanticsLabel: passenger.name,
+      semanticsLabel: displayName,
       child: Row(
         children: [
           AvatarWidget(
             imageUrl: passenger.avatarUrl,
-            name: passenger.name,
+            name: displayName,
             showVerifiedBadge: passenger.verified,
           ),
           const SizedBox(width: 12),
@@ -526,7 +548,7 @@ class _PassengerTileState extends ConsumerState<PassengerTile> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  passenger.name,
+                  displayName,
                   style: AppTextStyles.body,
                   overflow: TextOverflow.ellipsis,
                 ),

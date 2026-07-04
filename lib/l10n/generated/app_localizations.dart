@@ -806,6 +806,12 @@ abstract class AppLocalizations {
   /// **'Sube la tarjeta de propiedad (ambas caras) y el SOAT'**
   String get documentsRequired;
 
+  /// No description provided for @documentsSaved.
+  ///
+  /// In es, this message translates to:
+  /// **'Documentos guardados'**
+  String get documentsSaved;
+
   /// No description provided for @documentsCount.
   ///
   /// In es, this message translates to:
@@ -1243,6 +1249,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Aún no hay pasajeros en esta ruta'**
   String get noPassengersYet;
+
+  /// No description provided for @passengerFallback.
+  ///
+  /// In es, this message translates to:
+  /// **'Pasajero #{id}'**
+  String passengerFallback(String id);
+
+  /// No description provided for @unregisteredSeats.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 asiento reservado sin datos del pasajero} other{{count} asientos reservados sin datos del pasajero}}'**
+  String unregisteredSeats(int count);
 
   /// No description provided for @transactionsTitle.
   ///

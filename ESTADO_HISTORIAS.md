@@ -16,7 +16,7 @@ Leyenda: ✅ Hecho · ⚠️ Parcial (UI hecha, sin backend real o acción incom
 | US55 | Gestionar estado de reservas recibidas como proveedor | Owner | — | ✅ | `ReservationDetailScreen`: confirmar, rechazar, registrar entrega y devolución contra la API (`lib/features/fleet/presentation/reservation_detail_screen.dart`) |
 | US54 | Cancelar reserva de alquiler según políticas | Renter | ❌ | — | Sin botón ni llamada de cancelación en la app renter |
 | US50 | Editar información y precio de vehículo publicado | Owner | — | ✅ | `EditVehicleScreen` hace `PUT /vehicles/{id}` con el precio nuevo |
-| US05 | Acreditar propiedad de vehículo | Owner | — | ✅ | `AddVehicleScreen` tiene paso "Documentos de propiedad": tarjeta de propiedad (frente y reverso) + SOAT obligatorios, enviados en `documents` del `POST /vehicles`. Pendiente backend: almacenar/validar los archivos |
+| US05 | Acreditar propiedad de vehículo | Owner | — | ✅ | `AddVehicleScreen` tiene paso "Documentos de propiedad" (tarjeta frente/reverso + SOAT obligatorios) y `VehicleDetailScreen` muestra la acreditación con opción de completar/reemplazar documentos (copia local + envío al backend). Pendiente backend: almacenar/validar los archivos |
 | US02 | Verificar identidad mediante KYC | Ambas | ✅ | ✅ | Renter: `KycScreen`. Owner: `kyc_screen.dart` + `kyc_status_screen.dart` (backend en modo demo) |
 | US04 | Recuperar contraseña olvidada | Ambas | ✅ | ✅ | `ForgotPasswordScreen` conectada a `auth/forgot-password` en ambas |
 | US06 | Monitorear ruta en tiempo real vía GPS | Renter | ⚠️ | — | `TripTrackingScreen` con Google Maps funciona, pero con puntos demo locales (backend sin tracking) |
