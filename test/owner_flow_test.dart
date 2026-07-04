@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wheelspe_provider/features/auth/data/auth_models.dart';
+import 'package:wheelspe_provider/features/fleet/data/vehicle_model.dart';
 import 'package:wheelspe_provider/features/routes/data/route_model.dart';
 
 void main() {
@@ -108,6 +109,54 @@ void main() {
       expect(route.pendingPassengers.length, 1);
       expect(route.confirmedPassengers.length, 1);
       expect(route.confirmedSeats, 1);
+    });
+  });
+
+  group('VehicleModel documentos de propiedad (US05)', () {
+    test('toCreateJson incluye documents cuando hay documentos', () {
+      const vehicle = VehicleModel(
+        id: '',
+        brand: 'Toyota',
+        model: 'Yaris',
+        year: 2022,
+        plate: 'ABC-123',
+        category: 'Sedán',
+        pricePerDay: 120,
+        documents: {
+          'propertyCardFront': '/tmp/front.jpg',
+          'propertyCardBack': '/tmp/back.jpg',
+          'soat': '/tmp/soat.jpg',
+        },
+      );
+      final json = vehicle.toCreateJson('7');
+      expect(json['documents'], {
+        'propertyCardFront': '/tmp/front.jpg',
+        'propertyCardBack': '/tmp/back.jpg',
+        'soat': '/tmp/soat.jpg',
+      });
+    });
+
+    test('toCreateJson omite documents cuando está vacío', () {
+      const vehicle = VehicleModel(
+        id: '',
+        brand: 'Kia',
+        model: 'Rio',
+        year: 2021,
+        plate: 'XYZ-987',
+        category: 'Sedán',
+        pricePerDay: 100,
+      );
+      expect(vehicle.toCreateJson('7').containsKey('documents'), isFalse);
+    });
+
+    test('fromJson parsea documents si el backend los devuelve', () {
+      final vehicle = VehicleModel.fromJson({
+        'id': 5,
+        'brand': 'Toyota',
+        'model': 'Yaris',
+        'documents': {'soat': 'https://cdn/soat.jpg'},
+      });
+      expect(vehicle.documents['soat'], 'https://cdn/soat.jpg');
     });
   });
 }

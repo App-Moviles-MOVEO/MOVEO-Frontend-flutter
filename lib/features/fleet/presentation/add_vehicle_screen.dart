@@ -13,6 +13,7 @@ import 'package:wheelspe_provider/core/utils/validators.dart';
 import 'package:wheelspe_provider/features/fleet/data/vehicle_model.dart';
 import 'package:wheelspe_provider/features/fleet/presentation/fleet_providers.dart';
 import 'package:wheelspe_provider/l10n/generated/app_localizations.dart';
+import 'package:wheelspe_provider/shared/widgets/document_slot.dart';
 import 'package:wheelspe_provider/shared/widgets/snackbars.dart';
 import 'package:wheelspe_provider/shared/widgets/wheelspe_button.dart';
 import 'package:wheelspe_provider/shared/widgets/wheelspe_card.dart';
@@ -55,6 +56,11 @@ class _AddVehicleScreenState extends ConsumerState<AddVehicleScreen> {
   final _picker = ImagePicker();
   final List<XFile> _photos = [];
 
+  // Step 4 — documentos de propiedad (US05)
+  XFile? _propertyCardFront;
+  XFile? _propertyCardBack;
+  XFile? _soat;
+
   @override
   void dispose() {
     _modelController.dispose();
@@ -80,6 +86,18 @@ class _AddVehicleScreenState extends ConsumerState<AddVehicleScreen> {
           return false;
         }
         return true;
+      case 3:
+        if (_propertyCardFront == null ||
+            _propertyCardBack == null ||
+            _soat == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context).documentsRequired),
+            ),
+          );
+          return false;
+        }
+        return true;
       default:
         return true;
     }
@@ -91,6 +109,33 @@ class _AddVehicleScreenState extends ConsumerState<AddVehicleScreen> {
     setState(() {
       _photos.addAll(files.take(_maxPhotos - _photos.length));
     });
+  }
+
+  Future<void> _pickDocument(void Function(XFile) assign) async {
+    final l10n = AppLocalizations.of(context);
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_camera_outlined),
+              title: Text(l10n.camera),
+              onTap: () => Navigator.pop(context, ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: Text(l10n.gallery),
+              onTap: () => Navigator.pop(context, ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (source == null) return;
+    final file = await _picker.pickImage(source: source, imageQuality: 85);
+    if (file != null && mounted) setState(() => assign(file));
   }
 
   Future<void> _publish() async {
@@ -110,6 +155,13 @@ class _AddVehicleScreenState extends ConsumerState<AddVehicleScreen> {
         // En un backend real las fotos se subirían como multipart;
         // aquí enviamos las rutas locales como referencia.
         photos: _photos.map((f) => f.path).toList(),
+        documents: {
+          if (_propertyCardFront != null)
+            'propertyCardFront': _propertyCardFront!.path,
+          if (_propertyCardBack != null)
+            'propertyCardBack': _propertyCardBack!.path,
+          if (_soat != null) 'soat': _soat!.path,
+        },
       );
       await ref.read(vehicleActionsProvider).publish(vehicle);
       if (!mounted) return;
@@ -162,7 +214,7 @@ class _AddVehicleScreenState extends ConsumerState<AddVehicleScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final isLast = _step == 3;
+    final isLast = _step == 4;
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.addVehicleTitle)),
@@ -222,8 +274,13 @@ class _AddVehicleScreenState extends ConsumerState<AddVehicleScreen> {
             content: _buildPhotosStep(l10n),
           ),
           Step(
-            title: Text(l10n.stepConfirmation, style: AppTextStyles.body),
+            title: Text(l10n.stepDocuments, style: AppTextStyles.body),
             isActive: _step >= 3,
+            content: _buildDocumentsStep(l10n),
+          ),
+          Step(
+            title: Text(l10n.stepConfirmation, style: AppTextStyles.body),
+            isActive: _step >= 4,
             content: _buildSummaryStep(l10n),
           ),
         ],
@@ -445,6 +502,43 @@ class _AddVehicleScreenState extends ConsumerState<AddVehicleScreen> {
     );
   }
 
+  Widget _buildDocumentsStep(AppLocalizations l10n) {
+    final docs = <(String, XFile?, void Function(XFile))>[
+      (
+        l10n.docPropertyCardFront,
+        _propertyCardFront,
+        (f) => _propertyCardFront = f,
+      ),
+      (
+        l10n.docPropertyCardBack,
+        _propertyCardBack,
+        (f) => _propertyCardBack = f,
+      ),
+      (l10n.docSoat, _soat, (f) => _soat = f),
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(l10n.documentsIntro, style: AppTextStyles.bodySecondary),
+        const SizedBox(height: 12),
+        WheelsPeCard(
+          child: Column(
+            children: [
+              for (final (i, (label, file, assign)) in docs.indexed) ...[
+                if (i > 0) const Divider(height: 32),
+                DocumentSlot(
+                  label: label,
+                  file: file,
+                  onTap: () => _pickDocument(assign),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildSummaryStep(AppLocalizations l10n) {
     final rows = <(String, String)>[
       (l10n.brand, _brand),
@@ -459,6 +553,15 @@ class _AddVehicleScreenState extends ConsumerState<AddVehicleScreen> {
             '${_location.longitude.toStringAsFixed(4)}'
       ),
       (l10n.stepPhotos, '${_photos.length}'),
+      (
+        l10n.stepDocuments,
+        l10n.documentsCount(
+          [_propertyCardFront, _propertyCardBack, _soat]
+              .whereType<XFile>()
+              .length,
+          3,
+        ),
+      ),
     ];
     return WheelsPeCard(
       child: Column(

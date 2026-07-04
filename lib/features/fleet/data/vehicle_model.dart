@@ -32,6 +32,10 @@ class VehicleModel {
   final double? lng;
   final String address;
   final List<String> photos;
+
+  /// Documentos que acreditan la propiedad (US05). Claves:
+  /// `propertyCardFront`, `propertyCardBack`, `soat`.
+  final Map<String, String> documents;
   final VehicleStatus status;
   final int monthReservations;
   final double monthEarnings;
@@ -49,6 +53,7 @@ class VehicleModel {
     this.lng,
     this.address = '',
     this.photos = const [],
+    this.documents = const {},
     this.status = VehicleStatus.available,
     this.monthReservations = 0,
     this.monthEarnings = 0,
@@ -88,6 +93,10 @@ class VehicleModel {
       lng: lng,
       address: address,
       photos: photos?.cast<String>() ?? const [],
+      documents: json['documents'] is Map
+          ? (json['documents'] as Map)
+              .map((k, v) => MapEntry(k.toString(), v.toString()))
+          : const {},
       status: VehicleStatus.fromString(json['status'] as String?),
       monthReservations: (json['monthReservations'] as num?)?.toInt() ?? 0,
       monthEarnings: (json['monthEarnings'] as num?)?.toDouble() ?? 0,
@@ -121,5 +130,6 @@ class VehicleModel {
         'description': description,
         'images': photos,
         'bodyType': category,
+        if (documents.isNotEmpty) 'documents': documents,
       };
 }

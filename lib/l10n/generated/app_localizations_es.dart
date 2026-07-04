@@ -360,6 +360,37 @@ class AppLocalizationsEs extends AppLocalizations {
   String get stepPhotos => 'Fotos';
 
   @override
+  String get stepDocuments => 'Documentos de propiedad';
+
+  @override
+  String get documentsIntro =>
+      'Acredita que el vehículo es tuyo. Estos documentos no se muestran públicamente.';
+
+  @override
+  String get docPropertyCardFront => 'Tarjeta de propiedad (frente)';
+
+  @override
+  String get docPropertyCardBack => 'Tarjeta de propiedad (reverso)';
+
+  @override
+  String get docSoat => 'SOAT vigente';
+
+  @override
+  String get documentsRequired =>
+      'Sube la tarjeta de propiedad (ambas caras) y el SOAT';
+
+  @override
+  String documentsCount(int current, int total) {
+    return '$current/$total documentos';
+  }
+
+  @override
+  String get camera => 'Cámara';
+
+  @override
+  String get gallery => 'Galería';
+
+  @override
   String get stepConfirmation => 'Confirmación';
 
   @override

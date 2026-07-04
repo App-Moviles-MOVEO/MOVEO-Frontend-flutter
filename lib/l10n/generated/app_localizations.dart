@@ -770,6 +770,60 @@ abstract class AppLocalizations {
   /// **'Fotos'**
   String get stepPhotos;
 
+  /// No description provided for @stepDocuments.
+  ///
+  /// In es, this message translates to:
+  /// **'Documentos de propiedad'**
+  String get stepDocuments;
+
+  /// No description provided for @documentsIntro.
+  ///
+  /// In es, this message translates to:
+  /// **'Acredita que el vehículo es tuyo. Estos documentos no se muestran públicamente.'**
+  String get documentsIntro;
+
+  /// No description provided for @docPropertyCardFront.
+  ///
+  /// In es, this message translates to:
+  /// **'Tarjeta de propiedad (frente)'**
+  String get docPropertyCardFront;
+
+  /// No description provided for @docPropertyCardBack.
+  ///
+  /// In es, this message translates to:
+  /// **'Tarjeta de propiedad (reverso)'**
+  String get docPropertyCardBack;
+
+  /// No description provided for @docSoat.
+  ///
+  /// In es, this message translates to:
+  /// **'SOAT vigente'**
+  String get docSoat;
+
+  /// No description provided for @documentsRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'Sube la tarjeta de propiedad (ambas caras) y el SOAT'**
+  String get documentsRequired;
+
+  /// No description provided for @documentsCount.
+  ///
+  /// In es, this message translates to:
+  /// **'{current}/{total} documentos'**
+  String documentsCount(int current, int total);
+
+  /// No description provided for @camera.
+  ///
+  /// In es, this message translates to:
+  /// **'Cámara'**
+  String get camera;
+
+  /// No description provided for @gallery.
+  ///
+  /// In es, this message translates to:
+  /// **'Galería'**
+  String get gallery;
+
   /// No description provided for @stepConfirmation.
   ///
   /// In es, this message translates to:

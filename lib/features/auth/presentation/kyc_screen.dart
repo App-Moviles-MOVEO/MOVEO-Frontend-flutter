@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -11,6 +9,7 @@ import 'package:wheelspe_provider/core/utils/platform_utils.dart';
 import 'package:wheelspe_provider/features/auth/data/auth_models.dart';
 import 'package:wheelspe_provider/features/auth/presentation/auth_providers.dart';
 import 'package:wheelspe_provider/l10n/generated/app_localizations.dart';
+import 'package:wheelspe_provider/shared/widgets/document_slot.dart';
 import 'package:wheelspe_provider/shared/widgets/error_state.dart';
 import 'package:wheelspe_provider/shared/widgets/shimmer_card.dart';
 import 'package:wheelspe_provider/shared/widgets/snackbars.dart';
@@ -174,13 +173,13 @@ class _KycScreenState extends ConsumerState<KycScreen> {
           WheelsPeCard(
             child: Column(
               children: [
-                _DocumentSlot(
+                DocumentSlot(
                   label: l10n.kycUploadFront,
                   file: _front,
                   onTap: () => _pick(true),
                 ),
                 const Divider(height: 32),
-                _DocumentSlot(
+                DocumentSlot(
                   label: l10n.kycUploadBack,
                   file: _back,
                   onTap: () => _pick(false),
@@ -203,61 +202,6 @@ class _KycScreenState extends ConsumerState<KycScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _DocumentSlot extends StatelessWidget {
-  final String label;
-  final XFile? file;
-  final VoidCallback onTap;
-
-  const _DocumentSlot({
-    required this.label,
-    required this.file,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      label: label,
-      button: true,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Row(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: file == null
-                  ? Container(
-                      width: 88,
-                      height: 60,
-                      color: AppColors.surface,
-                      child: const Icon(
-                        Icons.add_a_photo_outlined,
-                        color: AppColors.textSecondary,
-                      ),
-                    )
-                  : Image.file(
-                      File(file!.path),
-                      width: 88,
-                      height: 60,
-                      fit: BoxFit.cover,
-                    ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(child: Text(label, style: AppTextStyles.body)),
-            Icon(
-              file == null ? Icons.chevron_right : Icons.check_circle,
-              color: file == null
-                  ? AppColors.textSecondary
-                  : AppColors.success,
-            ),
-          ],
-        ),
       ),
     );
   }
