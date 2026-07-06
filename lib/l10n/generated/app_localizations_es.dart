@@ -1140,4 +1140,201 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get couponReputationTooLow =>
       'El cliente no alcanza la reputación mínima del cupón';
+
+  @override
+  String get ok => 'Entendido';
+
+  @override
+  String get trustFilterTitle => 'Filtrar por confianza';
+
+  @override
+  String get trustFilterOff => 'Todas';
+
+  @override
+  String get noRequestsAboveThreshold =>
+      'Ninguna solicitud alcanza el umbral de confianza.';
+
+  @override
+  String belowThresholdSection(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count por debajo del umbral',
+      one: '1 por debajo del umbral',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get repeatWeekly => 'Repetir semanalmente';
+
+  @override
+  String get repeatWeeklyHint =>
+      'Publica esta misma ruta varias semanas seguidas.';
+
+  @override
+  String get weekdaysLabel => 'Días de la semana';
+
+  @override
+  String numberOfWeeksValue(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Durante $count semanas',
+      one: 'Durante 1 semana',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pickAtLeastOneDay => 'Selecciona al menos un día de la semana.';
+
+  @override
+  String recurringRoutesPublished(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Se publicaron $count rutas',
+      one: 'Se publicó 1 ruta',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get allianceTitle => 'Alianza corporativa';
+
+  @override
+  String get allianceIntro =>
+      'Postula a tu empresa para movilizar a tus colaboradores con WheelsPe. La revisión es automática e inmediata.';
+
+  @override
+  String get allianceCompany => 'Razón social';
+
+  @override
+  String get allianceRuc => 'RUC';
+
+  @override
+  String get allianceRucInvalid => 'El RUC debe tener 11 dígitos';
+
+  @override
+  String get allianceContact => 'Persona de contacto';
+
+  @override
+  String get alliancePhone => 'Teléfono de contacto';
+
+  @override
+  String get allianceFleetSize => 'Flota o colaboradores a movilizar';
+
+  @override
+  String get allianceFleetSizeHint =>
+      'Estimado de unidades o personas por movilizar.';
+
+  @override
+  String get allianceMessage => 'Mensaje (opcional)';
+
+  @override
+  String get allianceSubmit => 'Enviar solicitud';
+
+  @override
+  String get allianceHistory => 'Solicitudes enviadas';
+
+  @override
+  String get allianceApproved => 'Aprobada';
+
+  @override
+  String get allianceUnderReview => 'En revisión';
+
+  @override
+  String get allianceApprovedTitle => '¡Alianza aprobada!';
+
+  @override
+  String get allianceApprovedBody =>
+      'Tu empresa cumple los requisitos. Nuestro equipo comercial se pondrá en contacto para activar el convenio.';
+
+  @override
+  String get allianceUnderReviewTitle => 'Solicitud en revisión';
+
+  @override
+  String get allianceUnderReviewBody =>
+      'Recibimos tu solicitud. Se registró para revisión y te contactaremos si necesitamos más datos.';
+
+  @override
+  String get anomalyTitle => 'Monitoreo financiero';
+
+  @override
+  String get anomalyAutoReviewed =>
+      'Revisado automáticamente. Estas señales se marcaron para tu seguimiento.';
+
+  @override
+  String anomalyDetected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count movimientos marcados para revisión',
+      one: '1 movimiento marcado para revisión',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get anomalyAmountOutlier => 'Monto inusualmente alto';
+
+  @override
+  String get anomalyDuplicateCharge => 'Posible cobro duplicado';
+
+  @override
+  String get anomalyRefundSpike => 'Exceso de reembolsos';
+
+  @override
+  String anomalyRefundCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count reembolsos en el histórico',
+      one: '1 reembolso en el histórico',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get reviewMediationTitle => 'Mediación de reseñas';
+
+  @override
+  String get reviewMediationIntro =>
+      'Disputa una reseña injusta. El sistema resuelve automáticamente: si es un voto bajo, atípico y sin justificación, lo excluye de tu reputación.';
+
+  @override
+  String get reviewMediationAdjusted => 'Reputación ajustada';
+
+  @override
+  String reviewMediationExcludedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count reseñas excluidas por mediación',
+      one: '1 reseña excluida por mediación',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get reviewMediationExcludedBadge =>
+      'Excluida por mediación automática';
+
+  @override
+  String get reviewDisputeAction => 'Disputar';
+
+  @override
+  String get reviewDisputeUpheld =>
+      'Disputa aceptada: la reseña se excluyó de tu reputación.';
+
+  @override
+  String get reviewDisputeRejected =>
+      'La reseña se mantiene: no cumple los criterios de exclusión.';
+
+  @override
+  String get reviewDisputeRestore => 'Reincorporar';
+
+  @override
+  String get reviewDisputeRestored => 'Reseña reincorporada a tu reputación.';
 }

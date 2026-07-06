@@ -5,6 +5,8 @@ import 'package:wheelspe_provider/core/constants/app_colors.dart';
 import 'package:wheelspe_provider/core/constants/app_text_styles.dart';
 import 'package:wheelspe_provider/core/utils/currency_formatter.dart';
 import 'package:wheelspe_provider/core/utils/date_formatter.dart';
+import 'package:wheelspe_provider/features/moderation/domain/anomaly_detector.dart';
+import 'package:wheelspe_provider/features/moderation/presentation/moderation_providers.dart';
 import 'package:wheelspe_provider/features/transactions/data/transaction_model.dart';
 import 'package:wheelspe_provider/features/transactions/presentation/transactions_providers.dart';
 import 'package:wheelspe_provider/l10n/generated/app_localizations.dart';
@@ -22,6 +24,8 @@ class TransactionsScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final transactionsAsync = ref.watch(myTransactionsProvider);
     final summaryAsync = ref.watch(walletSummaryProvider);
+    final anomalies =
+        ref.watch(financialAnomaliesProvider).value ?? const [];
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.transactionsTitle)),
@@ -55,6 +59,11 @@ class TransactionsScreen extends ConsumerWidget {
               ),
               padding: const EdgeInsets.all(16),
               children: [
+                // US40: monitoreo automático de anomalías financieras.
+                if (anomalies.isNotEmpty) ...[
+                  _AnomalyBanner(anomalies: anomalies),
+                  const SizedBox(height: 16),
+                ],
                 // Header con total del mes
                 WheelsPeCard(
                   glow: true,
@@ -103,6 +112,94 @@ class TransactionsScreen extends ConsumerWidget {
 
   String _capitalize(String value) =>
       value.isEmpty ? value : value[0].toUpperCase() + value.substring(1);
+}
+
+/// US40: banner que resume las anomalías financieras detectadas y revisadas
+/// automáticamente. Al tocarlo muestra el detalle de cada anomalía.
+class _AnomalyBanner extends StatelessWidget {
+  final List<FinancialAnomaly> anomalies;
+
+  const _AnomalyBanner({required this.anomalies});
+
+  String _typeLabel(AppLocalizations l10n, AnomalyType type) => switch (type) {
+        AnomalyType.amountOutlier => l10n.anomalyAmountOutlier,
+        AnomalyType.duplicateCharge => l10n.anomalyDuplicateCharge,
+        AnomalyType.refundSpike => l10n.anomalyRefundSpike,
+      };
+
+  void _showDetail(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(l10n.anomalyTitle, style: AppTextStyles.title),
+              const SizedBox(height: 4),
+              Text(l10n.anomalyAutoReviewed, style: AppTextStyles.caption),
+              const SizedBox(height: 16),
+              for (final a in anomalies)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.flag_outlined,
+                      color: AppColors.warning),
+                  title: Text(_typeLabel(l10n, a.type),
+                      style: AppTextStyles.body),
+                  subtitle: a.type == AnomalyType.refundSpike
+                      ? Text(l10n.anomalyRefundCount(a.amount.toInt()),
+                          style: AppTextStyles.caption)
+                      : Text(
+                          '${a.label} · ${CurrencyFormatter.format(a.amount)}',
+                          style: AppTextStyles.caption,
+                        ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return WheelsPeCard(
+      onTap: () => _showDetail(context),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: AppColors.warning.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.shield_moon_outlined,
+                color: AppColors.warning),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l10n.anomalyTitle, style: AppTextStyles.body),
+                const SizedBox(height: 2),
+                Text(
+                  l10n.anomalyDetected(anomalies.length),
+                  style: AppTextStyles.caption,
+                ),
+              ],
+            ),
+          ),
+          const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+        ],
+      ),
+    );
+  }
 }
 
 class _TransactionTile extends StatelessWidget {

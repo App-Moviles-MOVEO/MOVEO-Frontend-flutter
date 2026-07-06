@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Desarrollo/cosas xd/MOVEO-Frontend/app/src/main/java/com/example/moveo_frontend/ui/screens/**)"
+    ]
+  }
+}
