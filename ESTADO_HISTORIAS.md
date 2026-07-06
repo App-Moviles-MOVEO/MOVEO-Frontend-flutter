@@ -45,7 +45,7 @@ Leyenda: ✅ Hecho · ⚠️ Parcial (UI hecha, sin backend real o acción incom
 | US30 | Configurar umbrales de reputación mínimos | Owner | — | ✅ | `ReputationThresholdScreen` (perfil): slider 0–5. Al aceptar un pasajero por debajo del umbral, `PassengerTile` pide confirmación manual (US16 + US30) |
 | US10 | Gestionar contactos de confianza | Renter | ✅ | — | `SafetyScreen` añade/elimina contactos persistentes (`TrustedContactsStore`, DataStore local). Backend sin endpoint de contactos |
 | US17 | Automatizar rutas recurrentes semanales | Owner | — | ✅ | `AddRouteScreen` tiene "Repetir semanalmente": selector de días (L–D) + número de semanas. `RecurrencePlanner.weeklyOccurrences` (motor puro) genera las fechas y `RoutesRepository.publishRecurringRoutes` crea una ruta por ocurrencia |
-| US27 | Aplicar cupones y beneficios promocionales | Ambas | ❌ | ✅ | Owner: `ApplyCouponScreen` valida un cupón (código, vigencia, reputación) y calcula el descuento con el motor puro `PromoOffer.apply` — la misma lógica que usaría el Renter al pagar. Pendiente backend: endpoint de promociones |
+| US27 | Aplicar cupones y beneficios promocionales | Ambas | ✅ | ✅ | Owner: `ApplyCouponScreen` valida un cupón (código, vigencia, reputación) y calcula el descuento con el motor puro `PromoOffer.apply`. Renter: cupón en el checkout (`PaymentScreen` + `PromoEngine`, códigos MOVEO10/BIENVENIDA20/VERANO15/MOVEO25 sobre alquiler+servicio). Pendiente backend: endpoint de promociones |
 | US29 | Recompensar usuarios con alta reputación | Ambas | ✅ | ✅ | Owner: promociones con `minReputation`. Renter: `RewardsScreen` con puntos/nivel/progreso derivados de la actividad real (viajes, reseñas) + bono por reputación ≥4.5; canje habilitado según puntos (`RewardStatus`) |
 | US34 | Gestionar ofertas promocionales temporales | Owner | — | ✅ | `PromotionsScreen` (perfil): crear cupones con % o monto fijo, vigencia (inicio/fin), activar/desactivar y eliminar. Estado calculado (vigente/programada/expirada). Persistencia local; pendiente endpoint de backend |
 | US36 | Reconocer comportamiento positivo con distintivos | Ambas | ✅ | ✅ | El backend otorga badges server-side (`stats.badges`: VERIFIED, PUNCTUAL, TOP_RENTER, FIVE_STARS) y ambas apps los muestran, con cálculo local de respaldo |
@@ -57,6 +57,20 @@ Leyenda: ✅ Hecho · ⚠️ Parcial (UI hecha, sin backend real o acción incom
 | US46 | Enviar solicitud de alianza corporativa | Ambas | ✅ | ✅ | Owner: `AllianceRequestScreen` (perfil) → formulario (razón social, RUC, contacto, flota) → `POST /support-tickets` categoría partnership + copia local. Revisión **automática** (`AlliancePartnership.evaluate`: aprueba con RUC válido y ≥5 unidades; si no, queda en revisión). Renter: Configuración → "Alianza corporativa" |
 | SP03 | Analizar opciones de KYC mediante IA | Backend | ❌ | ❌ | El KYC actual es subida manual de fotos |
 | SP04 | Investigar arquitectura de microservicios y contenedorización | Backend | ❌ | ❌ | No corresponde a los repos frontend |
+
+## Pendientes para la app Renter (handoff al equipo Renter)
+
+> La app Owner (este repo) quedó completa. Estas historias **viven en el repo Renter**
+> y son las únicas que faltan del lado frontend. Se listan con lo que ya existe en Owner
+> y puede reutilizarse para acelerar.
+
+| US | Estado Renter | Qué falta | Nota |
+|----|---------------|-----------|------|
+| US23 | ⚠️ | Cobrar la cuota del asiento del carpool. **Espera decisión de producto:** ¿se cobra al aceptar el conductor o prepago al enviar la solicitud? | Hoy el `book` solo crea la solicitud PENDING con `passengerId`; el flujo de pago (`POST /rentals/{id}/pay`) ya existe y se engancharía a la confirmación |
+| US07 | ⚠️ | Tracking del viaje con fuente real | **Bloqueado por backend** (no hay endpoint de posición en vivo, igual que US06); la UI ya está |
+| SP03 / SP04 | ❌ | KYC por IA y microservicios | Son de **backend/infra**, no de frontend |
+
+US27 ya quedó **✅ en Renter** (cupón en el checkout). Nada de lo anterior bloquea a la app Owner.
 
 ## Extras implementados en la app Renter (no figuraban en el backlog original)
 
@@ -71,6 +85,37 @@ Leyenda: ✅ Hecho · ⚠️ Parcial (UI hecha, sin backend real o acción incom
 - **Reporte de incidencias** (`ReportIncidentScreen` → `/support-tickets`).
 - **Cambiar contraseña** (`ChangePasswordScreen` → `POST /auth/change-password`) desde el perfil.
 - **Transacciones e ingresos** (`TransactionsScreen`, detalle, comisión de plataforma, filtros).
+
+## Requisitos de backend (lo que falta soportar server-side)
+
+Ambas apps funcionan hoy con estos flujos resueltos en el cliente (persistencia local
+y/o `support-tickets`). Para que sean "reales" y compartidos entre dispositivos, el
+backend debería exponer lo siguiente.
+
+### Para las historias nuevas de la app Owner (2026-07-06)
+
+| US | Hoy (frontend) | Qué debería exponer el backend |
+|----|----------------|--------------------------------|
+| US17 · Rutas recurrentes | Crea N rutas sueltas con `POST /adventure-routes` (una por ocurrencia) | Opcional: soporte de recurrencia nativo — campo `recurrenceRule` (RRULE/`{weekdays, weeks}`) en la ruta o `POST /adventure-routes/recurring` para crear el lote y poder editar/cancelar la serie completa |
+| US38 · Filtro por confianza | Filtro en cliente sobre `reputation` que ya viene en cada pasajero | Nada obligatorio. Opcional: filtro server-side `GET /adventure-routes/{id}/passengers?minReputation=` |
+| US46 · Alianza corporativa | `POST /support-tickets` (type `partnership`) + copia local; aprobación automática en cliente | Entidad propia `POST/GET /partnerships` (razón social, RUC, contacto, flota, estado) con evaluación/estado persistido; hoy no queda un registro consultable más allá del ticket |
+| US40 · Anomalías financieras | `AnomalyDetector` corre en cliente sobre las transacciones del usuario | Monitoreo real server-side (cruza usuarios/pagos): `GET /payments/anomalies` o flags `anomalyScore`/`flagged` en la transacción; webhook/notificación al detectar |
+| US41 · Disputas de reputación | Disputa + exclusión persistida **solo local**; mediación automática en cliente | 1) **`id` en cada reseña** (`/user-reviews` hoy no lo devuelve; el cliente deriva una clave). 2) `POST /user-reviews/{id}/dispute` + estado `disputed/excluded`. 3) Que la reputación agregada del usuario excluya las reseñas aceptadas |
+
+### Pendientes de backend ya señalados en la tabla
+
+| US | Qué falta en backend |
+|----|----------------------|
+| US05 · Acreditar propiedad | Almacenar y validar los documentos del vehículo (tarjeta de propiedad + SOAT); hoy solo copia local |
+| US02 · KYC | Verificación real (hoy en modo demo / subida manual de fotos) |
+| US11 · Filtro por género | Campo `gender` en `User` para validar "Solo mujeres" server-side |
+| US21 · Métodos de pago/cobro | Endpoint de métodos (`/payment-methods` / `/payout-methods`); hoy persistidos en el dispositivo |
+| US27 / US34 / US29 · Promociones | Endpoint de cupones/ofertas (`/promotions`) para crear, validar y aplicar server-side; hoy local |
+| US10 · Contactos de confianza | Endpoint de contactos (`/trusted-contacts`); hoy DataStore local en Renter |
+| US06 / US07 · Tracking GPS | Endpoint de posición en tiempo real del viaje; hoy fuente simulada/demo |
+| US23 · Cuota de carpool | Cobro de la cuota del asiento al confirmar la solicitud (además del `book` PENDING) |
+| US36 · Badges | Ya se otorgan server-side (`stats.badges`); mantener/ampliar como fuente de verdad |
+| SP03 / SP04 | KYC por IA y arquitectura de microservicios (investigación/infra de backend) |
 
 ## Resumen de cambios respecto a la tabla anterior (verificada solo contra la app renter)
 
