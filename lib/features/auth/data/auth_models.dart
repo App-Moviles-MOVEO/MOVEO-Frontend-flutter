@@ -18,6 +18,13 @@ class UserModel {
   final int completedRoutes;
   final double totalEarned;
 
+  /// Tasa de puntualidad calculada server-side (0..1). -1 si no viene.
+  final double onTimeRate;
+
+  /// Badges otorgados server-side (US36): VERIFIED, PUNCTUAL, TOP_RENTER,
+  /// FIVE_STARS. Vacío si el backend aún no los expone.
+  final List<String> serverBadges;
+
   const UserModel({
     required this.id,
     required this.fullName,
@@ -33,6 +40,8 @@ class UserModel {
     this.completedRentals = 0,
     this.completedRoutes = 0,
     this.totalEarned = 0,
+    this.onTimeRate = -1,
+    this.serverBadges = const [],
   });
 
   bool get isVerified =>
@@ -70,10 +79,21 @@ class UserModel {
     final stats = json['stats'];
     int completedRentals = (json['completedRentals'] as num?)?.toInt() ?? 0;
     double totalEarned = (json['totalEarned'] as num?)?.toDouble() ?? 0;
+    double onTimeRate = (json['onTimeRate'] as num?)?.toDouble() ?? -1;
+    List<String> serverBadges = (json['badges'] as List?)?.cast<String>() ??
+        const [];
     if (stats is Map) {
       completedRentals =
           (stats['completedRentals'] as num?)?.toInt() ?? completedRentals;
       totalEarned = (stats['totalEarned'] as num?)?.toDouble() ?? totalEarned;
+      onTimeRate = (stats['onTimeRate'] as num?)?.toDouble() ?? onTimeRate;
+      // reputation también puede venir dentro de stats.
+      if (reputation is! num && reputation is! Map) {
+        score = (stats['reputation'] as num?)?.toDouble() ?? score;
+      }
+      if (stats['badges'] is List) {
+        serverBadges = (stats['badges'] as List).cast<String>();
+      }
     }
 
     final status = (json['verificationStatus'] ?? json['kycStatus']) as String?;
@@ -103,6 +123,8 @@ class UserModel {
       completedRentals: completedRentals,
       completedRoutes: (json['completedRoutes'] as num?)?.toInt() ?? 0,
       totalEarned: totalEarned,
+      onTimeRate: onTimeRate,
+      serverBadges: serverBadges,
     );
   }
 }

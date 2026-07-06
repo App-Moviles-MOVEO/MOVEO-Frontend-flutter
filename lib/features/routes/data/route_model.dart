@@ -86,7 +86,13 @@ class RouteModel {
   final double? destLat;
   final double? destLng;
   final DateTime departureDateTime;
+
+  /// Asientos aún libres (`seatsAvailable`); el backend lo descuenta
+  /// con cada reserva.
   final int availableSeats;
+
+  /// Capacidad total de la ruta (`seatsTotal`). 0 si el contrato no lo trae.
+  final int totalSeats;
   final double pricePerSeat;
   final bool institutionalFilter;
   final bool womenOnly;
@@ -104,6 +110,7 @@ class RouteModel {
     this.destLng,
     required this.departureDateTime,
     required this.availableSeats,
+    this.totalSeats = 0,
     required this.pricePerSeat,
     this.institutionalFilter = false,
     this.womenOnly = false,
@@ -112,9 +119,7 @@ class RouteModel {
     this.passengers = const [],
   });
 
-  int get confirmedSeats => passengers
-      .where((p) => p.status == PassengerStatus.confirmed)
-      .length;
+  int get confirmedSeats => confirmedPassengers.fold(0, (s, p) => s + p.seats);
 
   List<RoutePassenger> get confirmedPassengers => passengers
       .where((p) => p.status == PassengerStatus.confirmed)
@@ -124,7 +129,30 @@ class RouteModel {
       .where((p) => p.status == PassengerStatus.pending)
       .toList();
 
-  double get earnings => confirmedSeats * pricePerSeat;
+  /// Capacidad a mostrar: total real, o los libres si el contrato no
+  /// trae `seatsTotal` (para no romper con backends antiguos).
+  int get seatCapacity => totalSeats > 0 ? totalSeats : availableSeats;
+
+  /// Asientos ocupados según el backend (total − libres). Si no hay
+  /// `seatsTotal`, cae a los confirmados registrados.
+  int get occupiedSeats {
+    final taken = totalSeats - availableSeats;
+    return taken > 0 ? taken : confirmedSeats;
+  }
+
+  /// Asientos reservados desde la app de alquiler que no tienen un
+  /// pasajero registrado (la lista `passengers` no los incluye).
+  int get unregisteredSeats {
+    final registered = passengers
+        .where((p) =>
+            p.status == PassengerStatus.confirmed ||
+            p.status == PassengerStatus.pending)
+        .fold(0, (s, p) => s + p.seats);
+    final unregistered = occupiedSeats - registered;
+    return unregistered > 0 ? unregistered : 0;
+  }
+
+  double get earnings => occupiedSeats * pricePerSeat;
 
   factory RouteModel.fromJson(Map<String, dynamic> json) {
     DateTime departure = DateTime.now();
@@ -158,6 +186,8 @@ class RouteModel {
                   json['seatsTotal']) as num?)
               ?.toInt() ??
           0,
+      totalSeats:
+          ((json['seatsTotal'] ?? json['totalSeats']) as num?)?.toInt() ?? 0,
       pricePerSeat: (json['pricePerSeat'] as num?)?.toDouble() ?? 0,
       institutionalFilter: (json['community'] as String?)?.isNotEmpty == true ||
           json['institutionalFilter'] == true,

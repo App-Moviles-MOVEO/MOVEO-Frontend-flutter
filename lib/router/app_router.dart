@@ -148,6 +148,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => ChecklistScreen(
               vehicleId: state.pathParameters['id']!,
               tipo: state.uri.queryParameters['tipo'] ?? 'PRE',
+              reservationId: state.uri.queryParameters['reservationId'],
             ),
           ),
           GoRoute(

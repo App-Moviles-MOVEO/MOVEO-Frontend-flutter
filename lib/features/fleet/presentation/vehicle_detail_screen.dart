@@ -2,8 +2,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:wheelspe_provider/core/constants/app_colors.dart';
 import 'package:wheelspe_provider/core/constants/app_text_styles.dart';
+import 'package:wheelspe_provider/core/storage/local_storage.dart';
 import 'package:wheelspe_provider/core/utils/currency_formatter.dart';
 import 'package:wheelspe_provider/core/utils/date_formatter.dart';
 import 'package:wheelspe_provider/features/fleet/data/reservation_model.dart';
@@ -11,6 +13,7 @@ import 'package:wheelspe_provider/features/fleet/data/vehicle_model.dart';
 import 'package:wheelspe_provider/features/fleet/presentation/fleet_providers.dart';
 import 'package:wheelspe_provider/l10n/generated/app_localizations.dart';
 import 'package:wheelspe_provider/shared/widgets/avatar_widget.dart';
+import 'package:wheelspe_provider/shared/widgets/document_slot.dart';
 import 'package:wheelspe_provider/shared/widgets/error_state.dart';
 import 'package:wheelspe_provider/shared/widgets/shimmer_card.dart';
 import 'package:wheelspe_provider/shared/widgets/snackbars.dart';
@@ -74,8 +77,78 @@ class _VehicleDetailBody extends ConsumerStatefulWidget {
 
 class _VehicleDetailBodyState extends ConsumerState<_VehicleDetailBody> {
   bool _changingStatus = false;
+  final _picker = ImagePicker();
+  late Map<String, String> _docs;
 
   VehicleModel get vehicle => widget.vehicle;
+
+  @override
+  void initState() {
+    super.initState();
+    // Documentos de propiedad (US05): lo que devuelva el backend más la
+    // copia local guardada al publicar (el backend aún no persiste el campo).
+    _docs = {
+      ...widget.vehicle.documents,
+      ...ref.read(localStorageProvider).loadVehicleDocs(widget.vehicle.id),
+    };
+  }
+
+  Future<void> _pickDoc(String key) async {
+    final l10n = AppLocalizations.of(context);
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_camera_outlined),
+              title: Text(l10n.camera),
+              onTap: () => Navigator.pop(context, ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: Text(l10n.gallery),
+              onTap: () => Navigator.pop(context, ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (source == null) return;
+    final file = await _picker.pickImage(source: source, imageQuality: 85);
+    if (file == null || !mounted) return;
+    setState(() => _docs[key] = file.path);
+    // Copia local por si la subida falla (backend sin desplegar / sin red).
+    await ref.read(localStorageProvider).saveVehicleDocs(vehicle.id, _docs);
+    try {
+      // Subida real (US05): multipart a POST /vehicles/{id}/documents.
+      final updated = await ref
+          .read(fleetRepositoryProvider)
+          .uploadOwnershipDocuments(vehicle.id, {key: file.path});
+      if (mounted && updated.documents.isNotEmpty) {
+        setState(() => _docs = {..._docs, ...updated.documents});
+      }
+      ref.invalidate(vehicleDetailProvider(vehicle.id));
+    } catch (_) {
+      // La copia local ya quedó guardada; se reintenta al volver a tocar.
+    }
+    if (mounted) {
+      showSuccessSnackBar(context, AppLocalizations.of(context).documentsSaved);
+    }
+  }
+
+  /// Etiqueta y color del estado de acreditación de propiedad.
+  (String, Color) _ownershipBadge(AppLocalizations l10n) =>
+      switch (vehicle.ownershipStatus) {
+        'approved' => (l10n.ownershipApproved, AppColors.success),
+        'rejected' => (l10n.ownershipRejected, AppColors.error),
+        'pending' => (l10n.ownershipPending, AppColors.warning),
+        _ => (
+            l10n.documentsCount(_docs.length, 3),
+            _docs.length >= 3 ? AppColors.success : AppColors.warning,
+          ),
+      };
 
   Future<void> _toggleStatus() async {
     final target = vehicle.status == VehicleStatus.maintenance
@@ -140,6 +213,54 @@ class _VehicleDetailBodyState extends ConsumerState<_VehicleDetailBody> {
             const SizedBox(height: 8),
             Text(vehicle.description, style: AppTextStyles.bodySecondary),
           ],
+          const SizedBox(height: 20),
+          // Acreditación de propiedad (US05)
+          Row(
+            children: [
+              Expanded(
+                child: Text(l10n.stepDocuments, style: AppTextStyles.title),
+              ),
+              Builder(builder: (context) {
+                final (label, color) = _ownershipBadge(l10n);
+                return Text(
+                  label,
+                  style: AppTextStyles.caption.copyWith(color: color),
+                );
+              }),
+            ],
+          ),
+          if (vehicle.ownershipStatus == 'rejected' &&
+              vehicle.ownershipRejectionReason != null) ...[
+            const SizedBox(height: 6),
+            Text(
+              vehicle.ownershipRejectionReason!,
+              style: AppTextStyles.caption.copyWith(color: AppColors.error),
+            ),
+          ],
+          const SizedBox(height: 12),
+          WheelsPeCard(
+            child: Column(
+              children: [
+                DocumentSlot(
+                  label: l10n.docPropertyCardFront,
+                  filePath: _docs['propertyCardFront'],
+                  onTap: () => _pickDoc('propertyCardFront'),
+                ),
+                const Divider(height: 32),
+                DocumentSlot(
+                  label: l10n.docPropertyCardBack,
+                  filePath: _docs['propertyCardBack'],
+                  onTap: () => _pickDoc('propertyCardBack'),
+                ),
+                const Divider(height: 32),
+                DocumentSlot(
+                  label: l10n.docSoat,
+                  filePath: _docs['soat'],
+                  onTap: () => _pickDoc('soat'),
+                ),
+              ],
+            ),
+          ),
           const SizedBox(height: 20),
           if (vehicle.status != VehicleStatus.rented)
             WheelsPeButton(

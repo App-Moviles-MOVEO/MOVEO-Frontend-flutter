@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wheelspe_provider/core/constants/app_colors.dart';
 import 'package:wheelspe_provider/core/constants/app_text_styles.dart';
 import 'package:wheelspe_provider/features/routes/data/route_model.dart';
 import 'package:wheelspe_provider/features/routes/presentation/route_detail_screen.dart';
@@ -8,6 +9,7 @@ import 'package:wheelspe_provider/l10n/generated/app_localizations.dart';
 import 'package:wheelspe_provider/shared/widgets/empty_state.dart';
 import 'package:wheelspe_provider/shared/widgets/error_state.dart';
 import 'package:wheelspe_provider/shared/widgets/shimmer_card.dart';
+import 'package:wheelspe_provider/shared/widgets/wheelspe_card.dart';
 
 /// Gestión completa de pasajeros de una ruta: solicitudes pendientes
 /// con aceptar/rechazar y confirmados con opción de eliminar.
@@ -29,7 +31,7 @@ class PassengersScreen extends ConsumerWidget {
           onRetry: () => ref.invalidate(routeDetailProvider(routeId)),
         ),
         data: (route) {
-          if (route.passengers.isEmpty) {
+          if (route.passengers.isEmpty && route.unregisteredSeats == 0) {
             return EmptyState(
               icon: Icons.airline_seat_recline_normal,
               title: l10n.noPassengersYet,
@@ -46,6 +48,24 @@ class PassengersScreen extends ConsumerWidget {
               ),
               padding: const EdgeInsets.all(16),
               children: [
+                if (route.unregisteredSeats > 0) ...[
+                  WheelsPeCard(
+                    child: Row(
+                      children: [
+                        const Icon(Icons.info_outline,
+                            color: AppColors.warning),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            l10n.unregisteredSeats(route.unregisteredSeats),
+                            style: AppTextStyles.bodySecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
                 if (route.pendingPassengers.isNotEmpty) ...[
                   Text(l10n.pendingRequests, style: AppTextStyles.title),
                   const SizedBox(height: 12),
@@ -56,6 +76,7 @@ class PassengersScreen extends ConsumerWidget {
                         routeId: routeId,
                         passenger: p,
                         showActions: manageable,
+                        availableSeats: route.availableSeats,
                       ),
                     ),
                   const SizedBox(height: 16),

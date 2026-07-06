@@ -380,6 +380,18 @@ class AppLocalizationsEs extends AppLocalizations {
       'Sube la tarjeta de propiedad (ambas caras) y el SOAT';
 
   @override
+  String get documentsSaved => 'Documentos guardados';
+
+  @override
+  String get ownershipPending => 'Acreditación en revisión';
+
+  @override
+  String get ownershipApproved => 'Propiedad acreditada';
+
+  @override
+  String get ownershipRejected => 'Acreditación rechazada';
+
+  @override
   String documentsCount(int current, int total) {
     return '$current/$total documentos';
   }
@@ -574,6 +586,14 @@ class AppLocalizationsEs extends AppLocalizations {
   String get publishRouteButton => 'Publicar ruta';
 
   @override
+  String get institutionalEmailRequired =>
+      'El carpooling requiere un correo institucional (@upc.edu.pe). Actualiza tu correo para publicar rutas.';
+
+  @override
+  String get capacityFull =>
+      'Aforo completo: no quedan asientos disponibles. Libera un cupo antes de aceptar.';
+
+  @override
   String get routePublished => '¡Ruta publicada!';
 
   @override
@@ -608,6 +628,22 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get noPassengersYet => 'Aún no hay pasajeros en esta ruta';
+
+  @override
+  String passengerFallback(String id) {
+    return 'Pasajero #$id';
+  }
+
+  @override
+  String unregisteredSeats(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count asientos reservados sin datos del pasajero',
+      one: '1 asiento reservado sin datos del pasajero',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get transactionsTitle => 'Mis cobros';
@@ -800,6 +836,37 @@ class AppLocalizationsEs extends AppLocalizations {
   String get withdrawRequested => 'Solicitud de retiro enviada';
 
   @override
+  String get withdrawAmount => 'Monto a retirar';
+
+  @override
+  String get withdrawDestination => 'Número o cuenta de destino';
+
+  @override
+  String get withdrawMethod => 'Método de retiro';
+
+  @override
+  String get withdrawConfirm => 'Solicitar retiro';
+
+  @override
+  String availableToWithdraw(String amount) {
+    return 'Disponible: $amount';
+  }
+
+  @override
+  String get insufficientBalance => 'El monto supera tu saldo disponible';
+
+  @override
+  String get withdrawalsHistory => 'Retiros';
+
+  @override
+  String get noWithdrawals => 'Aún no has solicitado retiros';
+
+  @override
+  String refundPolicyApplied(String policy, String amount) {
+    return 'Reembolso procesado ($policy): $amount';
+  }
+
+  @override
   String get selectDate => 'Seleccionar fecha';
 
   @override
@@ -810,6 +877,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get rateUser => 'Calificar usuario';
+
+  @override
+  String get rateRenter => 'Calificar arrendatario';
 
   @override
   String get comment => 'Comentario';

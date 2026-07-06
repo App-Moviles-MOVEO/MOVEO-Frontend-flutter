@@ -12,6 +12,21 @@ abstract class FleetRepository {
 
   Future<void> updateVehicle(String id, Map<String, dynamic> changes);
 
+  /// Sube documentos de propiedad (US05) y devuelve el vehículo
+  /// con el `ownershipStatus` resultante.
+  Future<VehicleModel> uploadOwnershipDocuments(
+    String id,
+    Map<String, String> docPaths,
+  );
+
+  /// Registra la inspección fotográfica PRE/POST de un alquiler (US12).
+  Future<void> submitInspection({
+    required String rentalId,
+    required String type,
+    required Map<String, String> photosByPoint,
+    String? createdById,
+  });
+
   Future<void> changeStatus(String id, VehicleStatus status);
 
   Future<List<DateTimeRange>> getAvailability(String vehicleId);
@@ -29,4 +44,13 @@ abstract class FleetRepository {
   Future<void> completeRental(String id);
 
   Future<void> cancelReservation(String id);
+
+  /// Califica al arrendatario al finalizar el alquiler (POST /user-reviews).
+  Future<void> rateRenter({
+    required String rentalId,
+    required String raterId,
+    required String rateeId,
+    required int score,
+    String comment = '',
+  });
 }

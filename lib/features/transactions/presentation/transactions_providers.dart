@@ -49,6 +49,32 @@ class WalletSummary {
   });
 }
 
+/// Saldo real de la wallet (GET /wallet/{id}). Si el endpoint aún no está
+/// disponible, cae a `null` y el resumen usa el cálculo local.
+final walletBalanceProvider = FutureProvider<WalletBalance?>((ref) async {
+  final userId = await ref.watch(currentUserIdProvider.future);
+  if (userId == null) return null;
+  try {
+    return await ref.watch(transactionsRepositoryProvider).getWallet(userId);
+  } catch (_) {
+    return null;
+  }
+});
+
+/// Historial de retiros del proveedor.
+final withdrawalsProvider =
+    FutureProvider<List<WithdrawalModel>>((ref) async {
+  final userId = await ref.watch(currentUserIdProvider.future);
+  if (userId == null) return const [];
+  try {
+    return await ref
+        .watch(transactionsRepositoryProvider)
+        .getWithdrawals(userId);
+  } catch (_) {
+    return const [];
+  }
+});
+
 final walletSummaryProvider = FutureProvider<WalletSummary>((ref) async {
   final transactions = await ref.watch(myTransactionsProvider.future);
   final completed = transactions
@@ -57,13 +83,13 @@ final walletSummaryProvider = FutureProvider<WalletSummary>((ref) async {
 
   final now = DateTime.now();
   final today = DateTime(now.year, now.month, now.day);
-  double balance = 0;
+  double computedBalance = 0;
   double week = 0;
   double month = 0;
   final daily = List<double>.filled(7, 0);
 
   for (final t in completed) {
-    balance += t.netAmount;
+    computedBalance += t.netAmount;
     final day = DateTime(t.date.year, t.date.month, t.date.day);
     final daysAgo = today.difference(day).inDays;
     if (daysAgo < 7) {
@@ -75,8 +101,12 @@ final walletSummaryProvider = FutureProvider<WalletSummary>((ref) async {
     }
   }
 
+  // El balance disponible (descontando retiros) lo da el backend; el gráfico
+  // y los acumulados por período se calculan desde los cobros.
+  final wallet = await ref.watch(walletBalanceProvider.future);
+
   return WalletSummary(
-    balance: balance,
+    balance: wallet?.balance ?? computedBalance,
     weekTotal: week,
     monthTotal: month,
     last7Days: daily,
@@ -89,11 +119,37 @@ class TransactionActions {
 
   const TransactionActions(this._ref);
 
-  Future<void> requestRefund(String id) async {
-    await _ref.read(transactionsRepositoryProvider).requestRefund(id);
+  Future<RefundResult> requestRefund(String id, {String? reason}) async {
+    final result = await _ref
+        .read(transactionsRepositoryProvider)
+        .requestRefund(id, reason: reason);
     _ref.invalidate(transactionDetailProvider(id));
     _ref.invalidate(myTransactionsProvider);
+    _ref.invalidate(walletBalanceProvider);
     _ref.invalidate(walletSummaryProvider);
+    return result;
+  }
+
+  Future<WithdrawalModel> requestWithdrawal({
+    required double amount,
+    required String method,
+    required String destination,
+  }) async {
+    final userId = await _ref.read(currentUserIdProvider.future);
+    if (userId == null || userId.isEmpty) {
+      throw StateError('No hay sesión activa');
+    }
+    final result =
+        await _ref.read(transactionsRepositoryProvider).requestWithdrawal(
+              userId: userId,
+              amount: amount,
+              method: method,
+              destination: destination,
+            );
+    _ref.invalidate(walletBalanceProvider);
+    _ref.invalidate(walletSummaryProvider);
+    _ref.invalidate(withdrawalsProvider);
+    return result;
   }
 }
 

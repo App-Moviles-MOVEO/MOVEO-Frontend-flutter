@@ -37,11 +37,11 @@ abstract class RoutesRepository {
     String ownerId,
   );
 
-  Future<void> startRoute(String id);
+  Future<void> startRoute(String id, String ownerId);
 
-  Future<void> completeRoute(String id);
+  Future<void> completeRoute(String id, String ownerId);
 
-  Future<void> cancelRoute(String id);
+  Future<void> cancelRoute(String id, String ownerId);
 
   /// Califica a un pasajero al finalizar la ruta (POST /user-reviews).
   Future<void> ratePassenger({

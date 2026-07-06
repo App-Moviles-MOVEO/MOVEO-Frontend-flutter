@@ -8,6 +8,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:wheelspe_provider/core/constants/app_colors.dart';
 import 'package:wheelspe_provider/core/constants/app_text_styles.dart';
+import 'package:wheelspe_provider/core/storage/local_storage.dart';
 import 'package:wheelspe_provider/core/utils/currency_formatter.dart';
 import 'package:wheelspe_provider/core/utils/validators.dart';
 import 'package:wheelspe_provider/features/fleet/data/vehicle_model.dart';
@@ -163,7 +164,14 @@ class _AddVehicleScreenState extends ConsumerState<AddVehicleScreen> {
           if (_soat != null) 'soat': _soat!.path,
         },
       );
-      await ref.read(vehicleActionsProvider).publish(vehicle);
+      final created = await ref.read(vehicleActionsProvider).publish(vehicle);
+      // El backend aún no persiste `documents`; se guarda una copia local
+      // asociada al vehículo creado para mostrarla en el detalle (US05).
+      if (created.id.isNotEmpty && vehicle.documents.isNotEmpty) {
+        await ref
+            .read(localStorageProvider)
+            .saveVehicleDocs(created.id, vehicle.documents);
+      }
       if (!mounted) return;
       await _showSuccessAndExit();
     } catch (e) {
@@ -528,7 +536,7 @@ class _AddVehicleScreenState extends ConsumerState<AddVehicleScreen> {
                 if (i > 0) const Divider(height: 32),
                 DocumentSlot(
                   label: label,
-                  file: file,
+                  filePath: file?.path,
                   onTap: () => _pickDocument(assign),
                 ),
               ],

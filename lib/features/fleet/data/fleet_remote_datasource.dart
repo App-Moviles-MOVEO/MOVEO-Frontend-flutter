@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart' show DateTimeRange;
 import 'package:wheelspe_provider/core/constants/api_constants.dart';
 import 'package:wheelspe_provider/core/network/dio_client.dart';
+import 'package:wheelspe_provider/features/auth/data/auth_models.dart';
 import 'package:wheelspe_provider/features/fleet/data/reservation_model.dart';
 import 'package:wheelspe_provider/features/fleet/data/vehicle_model.dart';
 
@@ -47,6 +48,87 @@ class FleetRemoteDataSource {
   Future<void> updateVehicle(String id, Map<String, dynamic> body) async {
     try {
       await _dio.put<dynamic>(ApiConstants.vehicleById(id), data: body);
+    } on DioException catch (e) {
+      throwAsAppException(e);
+    }
+  }
+
+  /// Sube fotos locales del vehículo: POST /vehicles/{id}/images
+  /// (multipart, campo "files"). Devuelve la galería completa actualizada.
+  Future<List<String>> uploadVehicleImages(
+    String id,
+    List<String> localPaths,
+  ) async {
+    try {
+      final form = FormData();
+      for (final path in localPaths) {
+        form.files.add(MapEntry(
+          'files',
+          await MultipartFile.fromFile(path),
+        ));
+      }
+      final response = await _dio.post<Map<String, dynamic>>(
+        ApiConstants.vehicleImages(id),
+        data: form,
+        options: Options(contentType: 'multipart/form-data'),
+      );
+      final images = response.data?['images'] ?? response.data?['urls'];
+      return images is List ? images.cast<String>() : const [];
+    } on DioException catch (e) {
+      throwAsAppException(e);
+    }
+  }
+
+  /// Sube los documentos de propiedad (US05): POST /vehicles/{id}/documents
+  /// (multipart con campos propertyCardFront/propertyCardBack/soat).
+  /// Devuelve el vehículo con `documents` y `ownershipStatus` actualizados.
+  Future<VehicleModel> uploadVehicleDocuments(
+    String id,
+    Map<String, String> docPaths,
+  ) async {
+    try {
+      final form = FormData();
+      for (final entry in docPaths.entries) {
+        form.files.add(MapEntry(
+          entry.key,
+          await MultipartFile.fromFile(entry.value),
+        ));
+      }
+      final response = await _dio.post<Map<String, dynamic>>(
+        ApiConstants.vehicleDocuments(id),
+        data: form,
+        options: Options(contentType: 'multipart/form-data'),
+      );
+      return VehicleModel.fromJson(response.data ?? {});
+    } on DioException catch (e) {
+      throwAsAppException(e);
+    }
+  }
+
+  /// Registra la inspección fotográfica (US12): POST /rentals/{id}/inspections
+  /// (multipart; cada foto va con el nombre de su punto como campo).
+  Future<void> uploadInspection({
+    required String rentalId,
+    required String type,
+    required Map<String, String> photosByPoint,
+    String? createdById,
+  }) async {
+    try {
+      final form = FormData.fromMap({
+        'type': type,
+        'createdById': ?createdById,
+      });
+      for (final entry in photosByPoint.entries) {
+        form.files.add(MapEntry(
+          entry.key,
+          await MultipartFile.fromFile(entry.value),
+        ));
+      }
+      await _dio.post<dynamic>(
+        ApiConstants.rentalInspections(rentalId),
+        data: form,
+        options: Options(contentType: 'multipart/form-data'),
+      );
     } on DioException catch (e) {
       throwAsAppException(e);
     }
@@ -119,6 +201,18 @@ class FleetRemoteDataSource {
     }
   }
 
+  /// Perfil de un usuario (para resolver los datos del arrendatario,
+  /// que /rentals solo referencia por `renterId`).
+  Future<UserModel> getUser(String id) async {
+    try {
+      final response =
+          await _dio.get<Map<String, dynamic>>(ApiConstants.userById(id));
+      return UserModel.fromJson(response.data ?? {});
+    } on DioException catch (e) {
+      throwAsAppException(e);
+    }
+  }
+
   Future<ReservationModel> getReservation(String id) async {
     try {
       final response =
@@ -148,6 +242,16 @@ class FleetRemoteDataSource {
         ApiConstants.rentalById(id),
         data: {'status': status.apiValue},
       );
+    } on DioException catch (e) {
+      throwAsAppException(e);
+    }
+  }
+
+  /// Califica al arrendatario al cierre del alquiler: POST /user-reviews
+  /// (alimenta la reputación del renter que se muestra en las reservas).
+  Future<void> rateRenter(Map<String, dynamic> body) async {
+    try {
+      await _dio.post<dynamic>(ApiConstants.userReviews, data: body);
     } on DioException catch (e) {
       throwAsAppException(e);
     }

@@ -175,13 +175,13 @@ class _KycScreenState extends ConsumerState<KycScreen> {
               children: [
                 DocumentSlot(
                   label: l10n.kycUploadFront,
-                  file: _front,
+                  filePath: _front?.path,
                   onTap: () => _pick(true),
                 ),
                 const Divider(height: 32),
                 DocumentSlot(
                   label: l10n.kycUploadBack,
-                  file: _back,
+                  filePath: _back?.path,
                   onTap: () => _pick(false),
                 ),
               ],

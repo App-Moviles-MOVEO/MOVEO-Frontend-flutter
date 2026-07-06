@@ -12,9 +12,16 @@ import 'package:wheelspe_provider/features/transactions/data/transaction_model.d
 class ReceiptService {
   const ReceiptService();
 
-  Future<void> shareReceipt(TransactionModel tx, {String? providerName}) async {
+  /// [invoiceNumber] es el correlativo oficial emitido por el backend
+  /// (`GET /rentals/{id}/invoice`). Si es null se usa `WPE-{id}` como respaldo.
+  Future<void> shareReceipt(
+    TransactionModel tx, {
+    String? providerName,
+    String? invoiceNumber,
+  }) async {
     final money = NumberFormat.currency(locale: 'es_PE', symbol: 'S/ ');
     final df = DateFormat('dd/MM/yyyy HH:mm');
+    final number = invoiceNumber ?? 'WPE-${tx.id}';
     final doc = pw.Document();
 
     doc.addPage(
@@ -37,7 +44,7 @@ class ReceiptService {
                 ],
               ),
               pw.SizedBox(height: 4),
-              pw.Text('N° WPE-${tx.id}',
+              pw.Text('N° $number',
                   style: const pw.TextStyle(fontSize: 10)),
               pw.Divider(),
               pw.SizedBox(height: 8),
