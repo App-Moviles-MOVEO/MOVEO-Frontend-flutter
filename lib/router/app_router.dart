@@ -8,6 +8,7 @@ import 'package:wheelspe_provider/features/auth/presentation/login_screen.dart';
 import 'package:wheelspe_provider/features/auth/presentation/onboarding_screen.dart';
 import 'package:wheelspe_provider/features/auth/presentation/register_screen.dart';
 import 'package:wheelspe_provider/features/auth/presentation/splash_screen.dart';
+import 'package:wheelspe_provider/features/alliances/presentation/alliance_request_screen.dart';
 import 'package:wheelspe_provider/features/chat/presentation/chat_screen.dart';
 import 'package:wheelspe_provider/features/chat/presentation/conversations_screen.dart';
 import 'package:wheelspe_provider/features/notifications/presentation/notifications_screen.dart';
@@ -19,6 +20,7 @@ import 'package:wheelspe_provider/features/fleet/presentation/reservation_detail
 import 'package:wheelspe_provider/features/fleet/presentation/reservations_screen.dart';
 import 'package:wheelspe_provider/features/fleet/presentation/vehicle_detail_screen.dart';
 import 'package:wheelspe_provider/features/home/presentation/home_screen.dart';
+import 'package:wheelspe_provider/features/moderation/presentation/review_disputes_screen.dart';
 import 'package:wheelspe_provider/features/incidents/presentation/report_incident_screen.dart';
 import 'package:wheelspe_provider/features/profile/presentation/badges_screen.dart';
 import 'package:wheelspe_provider/features/profile/presentation/change_password_screen.dart';
@@ -267,6 +269,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/profile/delete-account',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const DeleteAccountScreen(),
+      ),
+      // Alianza corporativa (US46).
+      GoRoute(
+        path: '/profile/alliance',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const AllianceRequestScreen(),
+      ),
+      // Mediación de disputas de reseñas (US41).
+      GoRoute(
+        path: '/profile/review-disputes',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const ReviewDisputesScreen(),
       ),
       // Promociones y cupones (US34/US27/US29). Literales antes de :id.
       GoRoute(

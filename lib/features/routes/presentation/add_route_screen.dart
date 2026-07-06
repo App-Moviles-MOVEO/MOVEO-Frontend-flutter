@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:wheelspe_provider/core/constants/app_colors.dart';
 import 'package:wheelspe_provider/core/constants/app_text_styles.dart';
 import 'package:wheelspe_provider/core/utils/currency_formatter.dart';
@@ -34,6 +35,17 @@ class _AddRouteScreenState extends ConsumerState<AddRouteScreen> {
   bool _womenOnly = false;
   bool _publishing = false;
 
+  // US17: recurrencia semanal.
+  bool _recurring = false;
+  final Set<int> _weekdays = {};
+  int _weeks = 4;
+
+  @override
+  void initState() {
+    super.initState();
+    _weekdays.add(_date.weekday);
+  }
+
   @override
   void dispose() {
     _originController.dispose();
@@ -50,7 +62,13 @@ class _AddRouteScreenState extends ConsumerState<AddRouteScreen> {
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 90)),
     );
-    if (picked != null) setState(() => _date = picked);
+    if (picked != null) {
+      setState(() {
+        _date = picked;
+        // El día de salida siempre forma parte de la recurrencia.
+        if (_recurring) _weekdays.add(picked.weekday);
+      });
+    }
   }
 
   Future<void> _pickTime() async {
@@ -60,6 +78,10 @@ class _AddRouteScreenState extends ConsumerState<AddRouteScreen> {
 
   Future<void> _publish() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_recurring && _weekdays.isEmpty) {
+      showInfoSnackBar(context, AppLocalizations.of(context).pickAtLeastOneDay);
+      return;
+    }
     // El carpooling exige correo institucional (comunidad verificada).
     final user = await ref.read(currentUserProvider.future);
     if (!Validators.isInstitutionalEmail(user.email)) {
@@ -77,19 +99,50 @@ class _AddRouteScreenState extends ConsumerState<AddRouteScreen> {
       if (ownerId == null || ownerId.isEmpty) {
         throw StateError('No hay sesión activa');
       }
-      final route = await ref.read(routesRepositoryProvider).publishRoute(
-            ownerId: ownerId,
-            origin: _originController.text.trim(),
-            destination: _destinationController.text.trim(),
-            departureDate: _date,
-            departureTime:
-                '${_time.hour.toString().padLeft(2, '0')}:${_time.minute.toString().padLeft(2, '0')}',
-            availableSeats: _seats,
-            pricePerSeat: SolesInputFormatter.parse(_priceController.text),
-            institutionalFilter: _upcOnly,
-            womenOnly: _womenOnly,
-            notes: _notesController.text.trim(),
-          );
+      final repo = ref.read(routesRepositoryProvider);
+      final departureTime =
+          '${_time.hour.toString().padLeft(2, '0')}:${_time.minute.toString().padLeft(2, '0')}';
+      final price = SolesInputFormatter.parse(_priceController.text);
+
+      if (_recurring) {
+        // US17: publica una ocurrencia por cada día seleccionado durante
+        // las semanas indicadas.
+        final created = await repo.publishRecurringRoutes(
+          ownerId: ownerId,
+          origin: _originController.text.trim(),
+          destination: _destinationController.text.trim(),
+          firstDate: _date,
+          departureTime: departureTime,
+          availableSeats: _seats,
+          pricePerSeat: price,
+          weekdays: _weekdays,
+          weeks: _weeks,
+          institutionalFilter: _upcOnly,
+          womenOnly: _womenOnly,
+          notes: _notesController.text.trim(),
+        );
+        ref.invalidate(myRoutesProvider);
+        if (!mounted) return;
+        showSuccessSnackBar(
+          context,
+          AppLocalizations.of(context).recurringRoutesPublished(created.length),
+        );
+        context.pop();
+        return;
+      }
+
+      final route = await repo.publishRoute(
+        ownerId: ownerId,
+        origin: _originController.text.trim(),
+        destination: _destinationController.text.trim(),
+        departureDate: _date,
+        departureTime: departureTime,
+        availableSeats: _seats,
+        pricePerSeat: price,
+        institutionalFilter: _upcOnly,
+        womenOnly: _womenOnly,
+        notes: _notesController.text.trim(),
+      );
       ref.invalidate(myRoutesProvider);
       if (!mounted) return;
       showSuccessSnackBar(context, AppLocalizations.of(context).routePublished);
@@ -245,6 +298,60 @@ class _AddRouteScreenState extends ConsumerState<AddRouteScreen> {
                     const Icon(Icons.female, color: AppColors.accent),
                 contentPadding: EdgeInsets.zero,
               ),
+              // US17: recurrencia semanal.
+              SwitchListTile(
+                value: _recurring,
+                onChanged: (v) => setState(() {
+                  _recurring = v;
+                  if (v && _weekdays.isEmpty) _weekdays.add(_date.weekday);
+                }),
+                title: Text(l10n.repeatWeekly, style: AppTextStyles.body),
+                subtitle:
+                    Text(l10n.repeatWeeklyHint, style: AppTextStyles.caption),
+                secondary:
+                    const Icon(Icons.repeat, color: AppColors.accent),
+                contentPadding: EdgeInsets.zero,
+              ),
+              if (_recurring) ...[
+                const SizedBox(height: 8),
+                Text(l10n.weekdaysLabel, style: AppTextStyles.subtitle),
+                const SizedBox(height: 8),
+                _WeekdaySelector(
+                  selected: _weekdays,
+                  locale: locale,
+                  onToggle: (wd) => setState(() {
+                    if (_weekdays.contains(wd)) {
+                      _weekdays.remove(wd);
+                    } else {
+                      _weekdays.add(wd);
+                    }
+                  }),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        l10n.numberOfWeeksValue(_weeks),
+                        style: AppTextStyles.subtitle,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.remove_circle_outline),
+                      color: AppColors.primary,
+                      onPressed:
+                          _weeks > 1 ? () => setState(() => _weeks--) : null,
+                    ),
+                    Text('$_weeks', style: AppTextStyles.title),
+                    IconButton(
+                      icon: const Icon(Icons.add_circle_outline),
+                      color: AppColors.primary,
+                      onPressed:
+                          _weeks < 12 ? () => setState(() => _weeks++) : null,
+                    ),
+                  ],
+                ),
+              ],
               const SizedBox(height: 8),
               WheelsPeTextField(
                 controller: _notesController,
@@ -263,6 +370,41 @@ class _AddRouteScreenState extends ConsumerState<AddRouteScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Selector de días de la semana (US17). 1 = lunes … 7 = domingo.
+class _WeekdaySelector extends StatelessWidget {
+  final Set<int> selected;
+  final String locale;
+  final ValueChanged<int> onToggle;
+
+  const _WeekdaySelector({
+    required this.selected,
+    required this.locale,
+    required this.onToggle,
+  });
+
+  String _label(int weekday) {
+    // 2024-01-01 fue lunes: DateTime(2024, 1, weekday) da el día correcto.
+    return DateFormat.E(locale).format(DateTime(2024, 1, weekday));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (var wd = 1; wd <= 7; wd++)
+          FilterChip(
+            label: Text(_label(wd)),
+            selected: selected.contains(wd),
+            showCheckmark: false,
+            onSelected: (_) => onToggle(wd),
+          ),
+      ],
     );
   }
 }

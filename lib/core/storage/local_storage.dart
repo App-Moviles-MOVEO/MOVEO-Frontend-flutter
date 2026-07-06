@@ -13,6 +13,8 @@ class LocalStorageKeys {
   static const String reputationThreshold = 'reputation_threshold';
   static const String payoutMethods = 'payout_methods';
   static const String promotions = 'promotions';
+  static const String alliances = 'alliances';
+  static const String reviewDisputes = 'review_disputes';
 
   static String checklist(String reservationId, String tipo) =>
       'checklist_${reservationId}_$tipo';
@@ -111,6 +113,31 @@ class LocalStorageService {
 
   Future<void> savePromotions(List<Map<String, dynamic>> promos) =>
       _prefs.setString(LocalStorageKeys.promotions, jsonEncode(promos));
+
+  /// Solicitudes de alianza corporativa (US46): lista de mapas JSON. El
+  /// backend no tiene endpoint de alianzas; se persiste localmente además de
+  /// registrar el ticket de soporte.
+  List<Map<String, dynamic>> loadAlliances() {
+    final raw = _prefs.getString(LocalStorageKeys.alliances);
+    if (raw == null) return [];
+    return (jsonDecode(raw) as List)
+        .map((e) => Map<String, dynamic>.from(e as Map))
+        .toList();
+  }
+
+  Future<void> saveAlliances(List<Map<String, dynamic>> requests) =>
+      _prefs.setString(LocalStorageKeys.alliances, jsonEncode(requests));
+
+  /// Reseñas disputadas por el proveedor (US41): conjunto de ids de reseña
+  /// que la mediación automática excluyó del cálculo de reputación.
+  List<String> loadDisputedReviewIds() {
+    final raw = _prefs.getString(LocalStorageKeys.reviewDisputes);
+    if (raw == null) return [];
+    return (jsonDecode(raw) as List).map((e) => e.toString()).toList();
+  }
+
+  Future<void> saveDisputedReviewIds(List<String> ids) =>
+      _prefs.setString(LocalStorageKeys.reviewDisputes, jsonEncode(ids));
 }
 
 /// Se sobreescribe en main() con la instancia real de SharedPreferences.

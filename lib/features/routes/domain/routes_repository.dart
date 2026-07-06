@@ -19,6 +19,24 @@ abstract class RoutesRepository {
     String notes,
   });
 
+  /// US17: publica la misma ruta de forma recurrente en los días [weekdays]
+  /// (1 = lunes … 7 = domingo) durante [weeks] semanas, empezando por la
+  /// semana de [firstDate]. Devuelve las rutas creadas.
+  Future<List<RouteModel>> publishRecurringRoutes({
+    required String ownerId,
+    required String origin,
+    required String destination,
+    required DateTime firstDate,
+    required String departureTime,
+    required int availableSeats,
+    required double pricePerSeat,
+    required Set<int> weekdays,
+    required int weeks,
+    bool institutionalFilter,
+    bool womenOnly,
+    String notes,
+  });
+
   Future<void> acceptPassenger(
     String routeId,
     String passengerId,

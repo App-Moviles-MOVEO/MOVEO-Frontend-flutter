@@ -2215,6 +2215,282 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'El cliente no alcanza la reputación mínima del cupón'**
   String get couponReputationTooLow;
+
+  /// No description provided for @ok.
+  ///
+  /// In es, this message translates to:
+  /// **'Entendido'**
+  String get ok;
+
+  /// No description provided for @trustFilterTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Filtrar por confianza'**
+  String get trustFilterTitle;
+
+  /// No description provided for @trustFilterOff.
+  ///
+  /// In es, this message translates to:
+  /// **'Todas'**
+  String get trustFilterOff;
+
+  /// No description provided for @noRequestsAboveThreshold.
+  ///
+  /// In es, this message translates to:
+  /// **'Ninguna solicitud alcanza el umbral de confianza.'**
+  String get noRequestsAboveThreshold;
+
+  /// No description provided for @belowThresholdSection.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 por debajo del umbral} other{{count} por debajo del umbral}}'**
+  String belowThresholdSection(int count);
+
+  /// No description provided for @repeatWeekly.
+  ///
+  /// In es, this message translates to:
+  /// **'Repetir semanalmente'**
+  String get repeatWeekly;
+
+  /// No description provided for @repeatWeeklyHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Publica esta misma ruta varias semanas seguidas.'**
+  String get repeatWeeklyHint;
+
+  /// No description provided for @weekdaysLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Días de la semana'**
+  String get weekdaysLabel;
+
+  /// No description provided for @numberOfWeeksValue.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{Durante 1 semana} other{Durante {count} semanas}}'**
+  String numberOfWeeksValue(int count);
+
+  /// No description provided for @pickAtLeastOneDay.
+  ///
+  /// In es, this message translates to:
+  /// **'Selecciona al menos un día de la semana.'**
+  String get pickAtLeastOneDay;
+
+  /// No description provided for @recurringRoutesPublished.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{Se publicó 1 ruta} other{Se publicaron {count} rutas}}'**
+  String recurringRoutesPublished(int count);
+
+  /// No description provided for @allianceTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Alianza corporativa'**
+  String get allianceTitle;
+
+  /// No description provided for @allianceIntro.
+  ///
+  /// In es, this message translates to:
+  /// **'Postula a tu empresa para movilizar a tus colaboradores con WheelsPe. La revisión es automática e inmediata.'**
+  String get allianceIntro;
+
+  /// No description provided for @allianceCompany.
+  ///
+  /// In es, this message translates to:
+  /// **'Razón social'**
+  String get allianceCompany;
+
+  /// No description provided for @allianceRuc.
+  ///
+  /// In es, this message translates to:
+  /// **'RUC'**
+  String get allianceRuc;
+
+  /// No description provided for @allianceRucInvalid.
+  ///
+  /// In es, this message translates to:
+  /// **'El RUC debe tener 11 dígitos'**
+  String get allianceRucInvalid;
+
+  /// No description provided for @allianceContact.
+  ///
+  /// In es, this message translates to:
+  /// **'Persona de contacto'**
+  String get allianceContact;
+
+  /// No description provided for @alliancePhone.
+  ///
+  /// In es, this message translates to:
+  /// **'Teléfono de contacto'**
+  String get alliancePhone;
+
+  /// No description provided for @allianceFleetSize.
+  ///
+  /// In es, this message translates to:
+  /// **'Flota o colaboradores a movilizar'**
+  String get allianceFleetSize;
+
+  /// No description provided for @allianceFleetSizeHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Estimado de unidades o personas por movilizar.'**
+  String get allianceFleetSizeHint;
+
+  /// No description provided for @allianceMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Mensaje (opcional)'**
+  String get allianceMessage;
+
+  /// No description provided for @allianceSubmit.
+  ///
+  /// In es, this message translates to:
+  /// **'Enviar solicitud'**
+  String get allianceSubmit;
+
+  /// No description provided for @allianceHistory.
+  ///
+  /// In es, this message translates to:
+  /// **'Solicitudes enviadas'**
+  String get allianceHistory;
+
+  /// No description provided for @allianceApproved.
+  ///
+  /// In es, this message translates to:
+  /// **'Aprobada'**
+  String get allianceApproved;
+
+  /// No description provided for @allianceUnderReview.
+  ///
+  /// In es, this message translates to:
+  /// **'En revisión'**
+  String get allianceUnderReview;
+
+  /// No description provided for @allianceApprovedTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¡Alianza aprobada!'**
+  String get allianceApprovedTitle;
+
+  /// No description provided for @allianceApprovedBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu empresa cumple los requisitos. Nuestro equipo comercial se pondrá en contacto para activar el convenio.'**
+  String get allianceApprovedBody;
+
+  /// No description provided for @allianceUnderReviewTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Solicitud en revisión'**
+  String get allianceUnderReviewTitle;
+
+  /// No description provided for @allianceUnderReviewBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Recibimos tu solicitud. Se registró para revisión y te contactaremos si necesitamos más datos.'**
+  String get allianceUnderReviewBody;
+
+  /// No description provided for @anomalyTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Monitoreo financiero'**
+  String get anomalyTitle;
+
+  /// No description provided for @anomalyAutoReviewed.
+  ///
+  /// In es, this message translates to:
+  /// **'Revisado automáticamente. Estas señales se marcaron para tu seguimiento.'**
+  String get anomalyAutoReviewed;
+
+  /// No description provided for @anomalyDetected.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 movimiento marcado para revisión} other{{count} movimientos marcados para revisión}}'**
+  String anomalyDetected(int count);
+
+  /// No description provided for @anomalyAmountOutlier.
+  ///
+  /// In es, this message translates to:
+  /// **'Monto inusualmente alto'**
+  String get anomalyAmountOutlier;
+
+  /// No description provided for @anomalyDuplicateCharge.
+  ///
+  /// In es, this message translates to:
+  /// **'Posible cobro duplicado'**
+  String get anomalyDuplicateCharge;
+
+  /// No description provided for @anomalyRefundSpike.
+  ///
+  /// In es, this message translates to:
+  /// **'Exceso de reembolsos'**
+  String get anomalyRefundSpike;
+
+  /// No description provided for @anomalyRefundCount.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 reembolso en el histórico} other{{count} reembolsos en el histórico}}'**
+  String anomalyRefundCount(int count);
+
+  /// No description provided for @reviewMediationTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Mediación de reseñas'**
+  String get reviewMediationTitle;
+
+  /// No description provided for @reviewMediationIntro.
+  ///
+  /// In es, this message translates to:
+  /// **'Disputa una reseña injusta. El sistema resuelve automáticamente: si es un voto bajo, atípico y sin justificación, lo excluye de tu reputación.'**
+  String get reviewMediationIntro;
+
+  /// No description provided for @reviewMediationAdjusted.
+  ///
+  /// In es, this message translates to:
+  /// **'Reputación ajustada'**
+  String get reviewMediationAdjusted;
+
+  /// No description provided for @reviewMediationExcludedCount.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 reseña excluida por mediación} other{{count} reseñas excluidas por mediación}}'**
+  String reviewMediationExcludedCount(int count);
+
+  /// No description provided for @reviewMediationExcludedBadge.
+  ///
+  /// In es, this message translates to:
+  /// **'Excluida por mediación automática'**
+  String get reviewMediationExcludedBadge;
+
+  /// No description provided for @reviewDisputeAction.
+  ///
+  /// In es, this message translates to:
+  /// **'Disputar'**
+  String get reviewDisputeAction;
+
+  /// No description provided for @reviewDisputeUpheld.
+  ///
+  /// In es, this message translates to:
+  /// **'Disputa aceptada: la reseña se excluyó de tu reputación.'**
+  String get reviewDisputeUpheld;
+
+  /// No description provided for @reviewDisputeRejected.
+  ///
+  /// In es, this message translates to:
+  /// **'La reseña se mantiene: no cumple los criterios de exclusión.'**
+  String get reviewDisputeRejected;
+
+  /// No description provided for @reviewDisputeRestore.
+  ///
+  /// In es, this message translates to:
+  /// **'Reincorporar'**
+  String get reviewDisputeRestore;
+
+  /// No description provided for @reviewDisputeRestored.
+  ///
+  /// In es, this message translates to:
+  /// **'Reseña reincorporada a tu reputación.'**
+  String get reviewDisputeRestored;
 }
 
 class _AppLocalizationsDelegate

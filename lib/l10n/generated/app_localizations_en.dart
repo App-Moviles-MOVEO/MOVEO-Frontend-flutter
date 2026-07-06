@@ -1136,4 +1136,199 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get couponReputationTooLow =>
       'The customer doesn\'t meet the coupon\'s minimum reputation';
+
+  @override
+  String get ok => 'Got it';
+
+  @override
+  String get trustFilterTitle => 'Filter by trust';
+
+  @override
+  String get trustFilterOff => 'All';
+
+  @override
+  String get noRequestsAboveThreshold =>
+      'No request meets the trust threshold.';
+
+  @override
+  String belowThresholdSection(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count below threshold',
+      one: '1 below threshold',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get repeatWeekly => 'Repeat weekly';
+
+  @override
+  String get repeatWeeklyHint =>
+      'Publish this same route for several weeks in a row.';
+
+  @override
+  String get weekdaysLabel => 'Days of the week';
+
+  @override
+  String numberOfWeeksValue(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'For $count weeks',
+      one: 'For 1 week',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pickAtLeastOneDay => 'Select at least one day of the week.';
+
+  @override
+  String recurringRoutesPublished(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count routes published',
+      one: '1 route published',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get allianceTitle => 'Corporate alliance';
+
+  @override
+  String get allianceIntro =>
+      'Apply with your company to move your staff with WheelsPe. Review is automatic and instant.';
+
+  @override
+  String get allianceCompany => 'Company name';
+
+  @override
+  String get allianceRuc => 'Tax ID (RUC)';
+
+  @override
+  String get allianceRucInvalid => 'The RUC must be 11 digits';
+
+  @override
+  String get allianceContact => 'Contact person';
+
+  @override
+  String get alliancePhone => 'Contact phone';
+
+  @override
+  String get allianceFleetSize => 'Fleet or staff to move';
+
+  @override
+  String get allianceFleetSizeHint => 'Estimated units or people to move.';
+
+  @override
+  String get allianceMessage => 'Message (optional)';
+
+  @override
+  String get allianceSubmit => 'Send request';
+
+  @override
+  String get allianceHistory => 'Submitted requests';
+
+  @override
+  String get allianceApproved => 'Approved';
+
+  @override
+  String get allianceUnderReview => 'Under review';
+
+  @override
+  String get allianceApprovedTitle => 'Alliance approved!';
+
+  @override
+  String get allianceApprovedBody =>
+      'Your company meets the requirements. Our sales team will reach out to activate the agreement.';
+
+  @override
+  String get allianceUnderReviewTitle => 'Request under review';
+
+  @override
+  String get allianceUnderReviewBody =>
+      'We received your request. It was logged for review and we\'ll contact you if we need more details.';
+
+  @override
+  String get anomalyTitle => 'Financial monitoring';
+
+  @override
+  String get anomalyAutoReviewed =>
+      'Automatically reviewed. These signals were flagged for your follow-up.';
+
+  @override
+  String anomalyDetected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count movements flagged for review',
+      one: '1 movement flagged for review',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get anomalyAmountOutlier => 'Unusually high amount';
+
+  @override
+  String get anomalyDuplicateCharge => 'Possible duplicate charge';
+
+  @override
+  String get anomalyRefundSpike => 'Excess refunds';
+
+  @override
+  String anomalyRefundCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count refunds on record',
+      one: '1 refund on record',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get reviewMediationTitle => 'Review mediation';
+
+  @override
+  String get reviewMediationIntro =>
+      'Dispute an unfair review. The system resolves it automatically: if it\'s a low, atypical vote with no justification, it\'s excluded from your reputation.';
+
+  @override
+  String get reviewMediationAdjusted => 'Adjusted reputation';
+
+  @override
+  String reviewMediationExcludedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count reviews excluded by mediation',
+      one: '1 review excluded by mediation',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get reviewMediationExcludedBadge => 'Excluded by automatic mediation';
+
+  @override
+  String get reviewDisputeAction => 'Dispute';
+
+  @override
+  String get reviewDisputeUpheld =>
+      'Dispute upheld: the review was excluded from your reputation.';
+
+  @override
+  String get reviewDisputeRejected =>
+      'The review stands: it doesn\'t meet the exclusion criteria.';
+
+  @override
+  String get reviewDisputeRestore => 'Restore';
+
+  @override
+  String get reviewDisputeRestored => 'Review restored to your reputation.';
 }

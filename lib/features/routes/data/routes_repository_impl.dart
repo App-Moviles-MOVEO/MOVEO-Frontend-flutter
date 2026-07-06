@@ -1,6 +1,7 @@
 import 'package:intl/intl.dart';
 import 'package:wheelspe_provider/features/routes/data/route_model.dart';
 import 'package:wheelspe_provider/features/routes/data/routes_remote_datasource.dart';
+import 'package:wheelspe_provider/features/routes/domain/recurrence.dart';
 import 'package:wheelspe_provider/features/routes/domain/routes_repository.dart';
 
 class RoutesRepositoryImpl implements RoutesRepository {
@@ -49,6 +50,46 @@ class RoutesRepositoryImpl implements RoutesRepository {
         'onlyWomen': womenOnly,
         if (institutionalFilter) 'community': 'UPC',
       });
+
+  @override
+  Future<List<RouteModel>> publishRecurringRoutes({
+    required String ownerId,
+    required String origin,
+    required String destination,
+    required DateTime firstDate,
+    required String departureTime,
+    required int availableSeats,
+    required double pricePerSeat,
+    required Set<int> weekdays,
+    required int weeks,
+    bool institutionalFilter = false,
+    bool womenOnly = false,
+    String notes = '',
+  }) async {
+    final dates = RecurrencePlanner.weeklyOccurrences(
+      firstDate: firstDate,
+      weekdays: weekdays,
+      weeks: weeks,
+    );
+    final created = <RouteModel>[];
+    for (final date in dates) {
+      created.add(
+        await publishRoute(
+          ownerId: ownerId,
+          origin: origin,
+          destination: destination,
+          departureDate: date,
+          departureTime: departureTime,
+          availableSeats: availableSeats,
+          pricePerSeat: pricePerSeat,
+          institutionalFilter: institutionalFilter,
+          womenOnly: womenOnly,
+          notes: notes,
+        ),
+      );
+    }
+    return created;
+  }
 
   @override
   Future<void> acceptPassenger(

@@ -342,9 +342,19 @@ class _ProfileBody extends ConsumerWidget {
                       context.push('/profile/reputation-threshold'),
                 ),
                 _MenuTile(
+                  icon: Icons.gavel_outlined,
+                  label: l10n.reviewMediationTitle,
+                  onTap: () => context.push('/profile/review-disputes'),
+                ),
+                _MenuTile(
                   icon: Icons.local_offer_outlined,
                   label: l10n.promotions,
                   onTap: () => context.push('/promotions'),
+                ),
+                _MenuTile(
+                  icon: Icons.handshake_outlined,
+                  label: l10n.allianceTitle,
+                  onTap: () => context.push('/profile/alliance'),
                 ),
                 ListTile(
                   leading: const Icon(
