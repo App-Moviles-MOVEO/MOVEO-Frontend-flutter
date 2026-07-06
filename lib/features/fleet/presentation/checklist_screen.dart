@@ -7,7 +7,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:wheelspe_provider/core/constants/app_colors.dart';
 import 'package:wheelspe_provider/core/constants/app_text_styles.dart';
 import 'package:wheelspe_provider/core/storage/local_storage.dart';
+import 'package:wheelspe_provider/features/fleet/presentation/fleet_providers.dart';
 import 'package:wheelspe_provider/l10n/generated/app_localizations.dart';
+import 'package:wheelspe_provider/shared/providers/user_provider.dart';
 import 'package:wheelspe_provider/shared/widgets/snackbars.dart';
 import 'package:wheelspe_provider/shared/widgets/wheelspe_button.dart';
 
@@ -34,10 +36,15 @@ class ChecklistScreen extends ConsumerStatefulWidget {
   final String vehicleId;
   final String tipo;
 
+  /// Alquiler asociado. Si viene, al finalizar se sube la inspección al
+  /// backend (POST /rentals/{id}/inspections). Si es null, solo queda local.
+  final String? reservationId;
+
   const ChecklistScreen({
     super.key,
     required this.vehicleId,
     required this.tipo,
+    this.reservationId,
   });
 
   @override
@@ -90,14 +97,26 @@ class _ChecklistScreenState extends ConsumerState<ChecklistScreen> {
       await ref
           .read(localStorageProvider)
           .saveChecklist(widget.vehicleId, widget.tipo, _photos);
-      // Las fotos quedan registradas localmente como evidencia;
-      // el backend las recibirá junto con un eventual incidente.
+      // Si el checklist pertenece a un alquiler, sube la inspección al
+      // backend (US12). El id de usuario queda como autor del registro.
+      final reservationId = widget.reservationId;
+      if (reservationId != null && reservationId.isNotEmpty) {
+        final ownerId = await ref.read(currentUserIdProvider.future);
+        await ref.read(fleetRepositoryProvider).submitInspection(
+              rentalId: reservationId,
+              type: widget.tipo,
+              photosByPoint: _photos,
+              createdById: ownerId,
+            );
+      }
       if (!mounted) return;
       showSuccessSnackBar(
         context,
         AppLocalizations.of(context).checklistSaved,
       );
       context.pop();
+    } catch (e) {
+      if (mounted) showErrorSnackBar(context, e);
     } finally {
       if (mounted) setState(() => _saving = false);
     }

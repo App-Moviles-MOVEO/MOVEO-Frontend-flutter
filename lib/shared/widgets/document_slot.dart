@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:wheelspe_provider/core/constants/app_colors.dart';
 import 'package:wheelspe_provider/core/constants/app_text_styles.dart';
@@ -9,7 +10,7 @@ import 'package:wheelspe_provider/core/constants/app_text_styles.dart';
 class DocumentSlot extends StatelessWidget {
   final String label;
 
-  /// Ruta local del archivo ya capturado, o `null` si falta.
+  /// Ruta local o URL del documento ya capturado, o `null` si falta.
   final String? filePath;
   final VoidCallback onTap;
 
@@ -33,31 +34,7 @@ class DocumentSlot extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: path == null
-                  ? Container(
-                      width: 88,
-                      height: 60,
-                      color: AppColors.surface,
-                      child: const Icon(
-                        Icons.add_a_photo_outlined,
-                        color: AppColors.textSecondary,
-                      ),
-                    )
-                  : Image.file(
-                      File(path),
-                      width: 88,
-                      height: 60,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => Container(
-                        width: 88,
-                        height: 60,
-                        color: AppColors.surface,
-                        child: const Icon(
-                          Icons.description_outlined,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ),
+              child: _thumbnail(path),
             ),
             const SizedBox(width: 16),
             Expanded(child: Text(label, style: AppTextStyles.body)),
@@ -70,6 +47,35 @@ class DocumentSlot extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _thumbnail(String? path) {
+    final placeholder = Container(
+      width: 88,
+      height: 60,
+      color: AppColors.surface,
+      child: Icon(
+        path == null ? Icons.add_a_photo_outlined : Icons.description_outlined,
+        color: AppColors.textSecondary,
+      ),
+    );
+    if (path == null) return placeholder;
+    if (path.startsWith('http')) {
+      return CachedNetworkImage(
+        imageUrl: path,
+        width: 88,
+        height: 60,
+        fit: BoxFit.cover,
+        errorWidget: (_, _, _) => placeholder,
+      );
+    }
+    return Image.file(
+      File(path),
+      width: 88,
+      height: 60,
+      fit: BoxFit.cover,
+      errorBuilder: (_, _, _) => placeholder,
     );
   }
 }

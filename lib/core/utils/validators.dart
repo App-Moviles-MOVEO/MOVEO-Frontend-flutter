@@ -23,4 +23,17 @@ class Validators {
 
   static bool isNotEmpty(String? value) =>
       value != null && value.trim().isNotEmpty;
+
+  /// Dominios de correo institucional habilitados para carpooling.
+  static const List<String> institutionalDomains = ['upc.edu.pe'];
+
+  /// El carpooling exige correo institucional: acepta `@dominio` y
+  /// subdominios (`u201812345@upc.edu.pe`, `nombre@u.upc.edu.pe`).
+  static bool isInstitutionalEmail(String? value) {
+    final email = value?.trim().toLowerCase() ?? '';
+    if (!isValidEmail(email)) return false;
+    return institutionalDomains.any(
+      (domain) => email.endsWith('@$domain') || email.endsWith('.$domain'),
+    );
+  }
 }

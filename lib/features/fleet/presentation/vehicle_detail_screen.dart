@@ -119,19 +119,36 @@ class _VehicleDetailBodyState extends ConsumerState<_VehicleDetailBody> {
     final file = await _picker.pickImage(source: source, imageQuality: 85);
     if (file == null || !mounted) return;
     setState(() => _docs[key] = file.path);
+    // Copia local por si la subida falla (backend sin desplegar / sin red).
     await ref.read(localStorageProvider).saveVehicleDocs(vehicle.id, _docs);
-    // Mejor esfuerzo: se manda al backend aunque hoy no persista el campo.
     try {
-      await ref
+      // Subida real (US05): multipart a POST /vehicles/{id}/documents.
+      final updated = await ref
           .read(fleetRepositoryProvider)
-          .updateVehicle(vehicle.id, {'documents': _docs});
+          .uploadOwnershipDocuments(vehicle.id, {key: file.path});
+      if (mounted && updated.documents.isNotEmpty) {
+        setState(() => _docs = {..._docs, ...updated.documents});
+      }
+      ref.invalidate(vehicleDetailProvider(vehicle.id));
     } catch (_) {
-      // La copia local ya quedó guardada.
+      // La copia local ya quedó guardada; se reintenta al volver a tocar.
     }
     if (mounted) {
       showSuccessSnackBar(context, AppLocalizations.of(context).documentsSaved);
     }
   }
+
+  /// Etiqueta y color del estado de acreditación de propiedad.
+  (String, Color) _ownershipBadge(AppLocalizations l10n) =>
+      switch (vehicle.ownershipStatus) {
+        'approved' => (l10n.ownershipApproved, AppColors.success),
+        'rejected' => (l10n.ownershipRejected, AppColors.error),
+        'pending' => (l10n.ownershipPending, AppColors.warning),
+        _ => (
+            l10n.documentsCount(_docs.length, 3),
+            _docs.length >= 3 ? AppColors.success : AppColors.warning,
+          ),
+      };
 
   Future<void> _toggleStatus() async {
     final target = vehicle.status == VehicleStatus.maintenance
@@ -203,16 +220,23 @@ class _VehicleDetailBodyState extends ConsumerState<_VehicleDetailBody> {
               Expanded(
                 child: Text(l10n.stepDocuments, style: AppTextStyles.title),
               ),
-              Text(
-                l10n.documentsCount(_docs.length, 3),
-                style: AppTextStyles.caption.copyWith(
-                  color: _docs.length >= 3
-                      ? AppColors.success
-                      : AppColors.warning,
-                ),
-              ),
+              Builder(builder: (context) {
+                final (label, color) = _ownershipBadge(l10n);
+                return Text(
+                  label,
+                  style: AppTextStyles.caption.copyWith(color: color),
+                );
+              }),
             ],
           ),
+          if (vehicle.ownershipStatus == 'rejected' &&
+              vehicle.ownershipRejectionReason != null) ...[
+            const SizedBox(height: 6),
+            Text(
+              vehicle.ownershipRejectionReason!,
+              style: AppTextStyles.caption.copyWith(color: AppColors.error),
+            ),
+          ],
           const SizedBox(height: 12),
           WheelsPeCard(
             child: Column(

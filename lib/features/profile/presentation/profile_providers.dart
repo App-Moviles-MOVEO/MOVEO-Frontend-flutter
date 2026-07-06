@@ -29,14 +29,29 @@ class ProviderBadges {
     this.fiveStars = false,
   });
 
-  factory ProviderBadges.fromUser(UserModel user) => ProviderBadges(
-        verified: user.isVerified,
-        // El backend aún no expone tasa de puntualidad; se usa la
-        // reputación junto con la actividad como aproximación.
-        punctual: user.completedRentals > 0 && user.reputation >= 4.5,
-        topRenter: user.completedRentals > 10,
-        fiveStars: user.reputation >= 4.8 && user.ratingCount > 0,
+  factory ProviderBadges.fromUser(UserModel user) {
+    // Preferimos los badges otorgados server-side (US36). Si el backend aún
+    // no los expone, caemos a la aproximación por reputación/actividad.
+    if (user.serverBadges.isNotEmpty) {
+      final b = user.serverBadges.map((e) => e.toUpperCase()).toSet();
+      return ProviderBadges(
+        verified: b.contains('VERIFIED'),
+        punctual: b.contains('PUNCTUAL'),
+        topRenter: b.contains('TOP_RENTER'),
+        fiveStars: b.contains('FIVE_STARS'),
       );
+    }
+    return ProviderBadges(
+      verified: user.isVerified,
+      // Con onTimeRate del backend usamos el umbral real; si no viene (-1),
+      // aproximamos con reputación + actividad.
+      punctual: user.onTimeRate >= 0
+          ? user.completedRentals >= 3 && user.onTimeRate >= 0.9
+          : user.completedRentals > 0 && user.reputation >= 4.5,
+      topRenter: user.completedRentals > 10,
+      fiveStars: user.reputation >= 4.8 && user.ratingCount > 0,
+    );
+  }
 }
 
 final myBadgesProvider = FutureProvider<ProviderBadges>((ref) async {

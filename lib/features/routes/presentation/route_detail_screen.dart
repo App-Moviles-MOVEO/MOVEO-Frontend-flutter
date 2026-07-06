@@ -219,6 +219,7 @@ class _RouteDetailBodyState extends ConsumerState<_RouteDetailBody> {
                 routeId: route.id,
                 passenger: p,
                 showActions: route.status == RouteStatus.scheduled,
+                availableSeats: route.availableSeats,
               ),
             ),
           for (final p in route.confirmedPassengers)
@@ -494,12 +495,17 @@ class PassengerTile extends ConsumerStatefulWidget {
   final bool showActions;
   final bool allowRemoveConfirmed;
 
+  /// Asientos libres de la ruta; controla el aforo al aceptar (US16).
+  /// `null` desactiva el control (p. ej. si el contrato no trae el dato).
+  final int? availableSeats;
+
   const PassengerTile({
     super.key,
     required this.routeId,
     required this.passenger,
     this.showActions = false,
     this.allowRemoveConfirmed = false,
+    this.availableSeats,
   });
 
   @override
@@ -573,12 +579,21 @@ class _PassengerTileState extends ConsumerState<PassengerTile> {
                   color: AppColors.success,
                   size: 30,
                 ),
-                onPressed: () => _run(
-                  () => actions.acceptPassenger(
-                    widget.routeId,
-                    passenger.passengerId,
-                  ),
-                ),
+                onPressed: () {
+                  // Control de aforo (US16): el backend descuenta el cupo
+                  // al aceptar, así que no se acepta sin asientos libres.
+                  final available = widget.availableSeats;
+                  if (available != null && passenger.seats > available) {
+                    showInfoSnackBar(context, l10n.capacityFull);
+                    return;
+                  }
+                  _run(
+                    () => actions.acceptPassenger(
+                      widget.routeId,
+                      passenger.passengerId,
+                    ),
+                  );
+                },
               ),
             ),
             Semantics(

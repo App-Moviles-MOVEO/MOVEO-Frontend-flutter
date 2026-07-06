@@ -60,6 +60,17 @@ class _AddRouteScreenState extends ConsumerState<AddRouteScreen> {
 
   Future<void> _publish() async {
     if (!_formKey.currentState!.validate()) return;
+    // El carpooling exige correo institucional (comunidad verificada).
+    final user = await ref.read(currentUserProvider.future);
+    if (!Validators.isInstitutionalEmail(user.email)) {
+      if (mounted) {
+        showInfoSnackBar(
+          context,
+          AppLocalizations.of(context).institutionalEmailRequired,
+        );
+      }
+      return;
+    }
     setState(() => _publishing = true);
     try {
       final ownerId = await ref.read(currentUserIdProvider.future);
@@ -98,6 +109,9 @@ class _AddRouteScreenState extends ConsumerState<AddRouteScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final locale = Localizations.localeOf(context).languageCode;
+    final user = ref.watch(currentUserProvider).valueOrNull;
+    final missingInstitutionalEmail =
+        user != null && !Validators.isInstitutionalEmail(user.email);
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.addRouteTitle)),
@@ -109,6 +123,24 @@ class _AddRouteScreenState extends ConsumerState<AddRouteScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (missingInstitutionalEmail) ...[
+                WheelsPeCard(
+                  child: Row(
+                    children: [
+                      const Icon(Icons.school_outlined,
+                          color: AppColors.warning),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          l10n.institutionalEmailRequired,
+                          style: AppTextStyles.bodySecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
               WheelsPeTextField(
                 controller: _originController,
                 label: l10n.origin,

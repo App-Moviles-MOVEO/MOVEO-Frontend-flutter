@@ -15,6 +15,7 @@ import 'package:wheelspe_provider/shared/widgets/shimmer_card.dart';
 import 'package:wheelspe_provider/shared/widgets/snackbars.dart';
 import 'package:wheelspe_provider/shared/widgets/wheelspe_button.dart';
 import 'package:wheelspe_provider/shared/widgets/wheelspe_card.dart';
+import 'package:wheelspe_provider/shared/widgets/wheelspe_text_field.dart';
 
 class ReservationDetailScreen extends ConsumerWidget {
   final String reservationId;
@@ -63,6 +64,7 @@ class _ReservationDetailBody extends ConsumerStatefulWidget {
 class _ReservationDetailBodyState
     extends ConsumerState<_ReservationDetailBody> {
   bool _busy = false;
+  bool _rated = false;
 
   ReservationModel get reservation => widget.reservation;
 
@@ -253,7 +255,8 @@ class _ReservationDetailBodyState
               await actions.startRental(reservation);
               if (mounted) {
                 context.push(
-                  '/fleet/${reservation.vehicleId}/checklist?tipo=PRE',
+                  '/fleet/${reservation.vehicleId}/checklist'
+                  '?tipo=PRE&reservationId=${reservation.id}',
                 );
               }
             }),
@@ -269,7 +272,8 @@ class _ReservationDetailBodyState
               await actions.completeRental(reservation);
               if (mounted) {
                 context.push(
-                  '/fleet/${reservation.vehicleId}/checklist?tipo=POST',
+                  '/fleet/${reservation.vehicleId}/checklist'
+                  '?tipo=POST&reservationId=${reservation.id}',
                 );
               }
             }),
@@ -277,15 +281,86 @@ class _ReservationDetailBodyState
         ];
       case ReservationStatus.completed:
         return [
+          // Cierra el ciclo de reputación: el owner califica al arrendatario
+          // (POST /user-reviews, alimenta renter.reputation en próximas reservas).
+          if (!_rated && reservation.renterId.isNotEmpty) ...[
+            WheelsPeButton(
+              label: l10n.rateRenter,
+              icon: Icons.star_outline_rounded,
+              loading: _busy,
+              onPressed: _showRateRenterDialog,
+            ),
+            const SizedBox(height: 12),
+          ],
           WheelsPeButton(
             label: l10n.viewReceipt,
             icon: Icons.receipt_long_outlined,
+            variant: _rated
+                ? WheelsPeButtonVariant.primary
+                : WheelsPeButtonVariant.secondary,
             onPressed: () => context.push('/transactions'),
           ),
         ];
       case ReservationStatus.cancelled:
         return const [];
     }
+  }
+
+  void _showRateRenterDialog() {
+    final l10n = AppLocalizations.of(context);
+    final commentController = TextEditingController();
+    int score = 5;
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) => AlertDialog(
+          title: Text(l10n.rateRenter, style: AppTextStyles.title),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(reservation.renterName, style: AppTextStyles.body),
+              const SizedBox(height: 12),
+              RatingStars(
+                rating: score.toDouble(),
+                size: 34,
+                onChanged: (value) => setDialogState(() => score = value),
+              ),
+              const SizedBox(height: 16),
+              WheelsPeTextField(
+                controller: commentController,
+                label: l10n.comment,
+                maxLines: 3,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(dialogContext).pop();
+                var ok = false;
+                await _run(() async {
+                  await ref.read(reservationActionsProvider).rateRenter(
+                        reservation,
+                        score,
+                        commentController.text.trim(),
+                      );
+                  ok = true;
+                });
+                if (mounted && ok) {
+                  setState(() => _rated = true);
+                  showSuccessSnackBar(context, l10n.ratingSent);
+                }
+              },
+              child: Text(l10n.send),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _row(String label, String value) => Padding(

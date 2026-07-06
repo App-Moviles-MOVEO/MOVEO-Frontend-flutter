@@ -380,6 +380,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get documentsSaved => 'Documents saved';
 
   @override
+  String get ownershipPending => 'Ownership under review';
+
+  @override
+  String get ownershipApproved => 'Ownership verified';
+
+  @override
+  String get ownershipRejected => 'Ownership rejected';
+
+  @override
   String documentsCount(int current, int total) {
     return '$current/$total documents';
   }
@@ -571,6 +580,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get publishRouteButton => 'Publish route';
+
+  @override
+  String get institutionalEmailRequired =>
+      'Carpooling requires an institutional email (@upc.edu.pe). Update your email to publish routes.';
+
+  @override
+  String get capacityFull =>
+      'Route is full: no seats left. Free up a seat before accepting.';
 
   @override
   String get routePublished => 'Route published!';
@@ -815,6 +832,37 @@ class AppLocalizationsEn extends AppLocalizations {
   String get withdrawRequested => 'Withdrawal request sent';
 
   @override
+  String get withdrawAmount => 'Amount to withdraw';
+
+  @override
+  String get withdrawDestination => 'Destination number or account';
+
+  @override
+  String get withdrawMethod => 'Withdrawal method';
+
+  @override
+  String get withdrawConfirm => 'Request withdrawal';
+
+  @override
+  String availableToWithdraw(String amount) {
+    return 'Available: $amount';
+  }
+
+  @override
+  String get insufficientBalance => 'Amount exceeds your available balance';
+
+  @override
+  String get withdrawalsHistory => 'Withdrawals';
+
+  @override
+  String get noWithdrawals => 'You haven\'t requested any withdrawals yet';
+
+  @override
+  String refundPolicyApplied(String policy, String amount) {
+    return 'Refund processed ($policy): $amount';
+  }
+
+  @override
   String get selectDate => 'Select date';
 
   @override
@@ -825,6 +873,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rateUser => 'Rate user';
+
+  @override
+  String get rateRenter => 'Rate renter';
 
   @override
   String get comment => 'Comment';

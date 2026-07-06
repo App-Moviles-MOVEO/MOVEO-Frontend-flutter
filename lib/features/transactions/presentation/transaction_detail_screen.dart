@@ -175,11 +175,25 @@ class _TransactionDetailBodyState
   Future<void> _downloadReceipt() async {
     setState(() => _busy = true);
     try {
-      // Comprobante generado en el dispositivo (el backend no tiene /invoices).
       final providerName = ref.read(currentUserProvider).value?.fullName;
-      await ref
-          .read(receiptServiceProvider)
-          .shareReceipt(transaction, providerName: providerName);
+      // Número oficial correlativo del backend (US25); si el endpoint no
+      // responde, el PDF cae al respaldo local `WPE-{id}`.
+      String? invoiceNumber;
+      if (transaction.rentalId.isNotEmpty) {
+        try {
+          final invoice = await ref
+              .read(transactionsRepositoryProvider)
+              .getRentalInvoice(transaction.rentalId);
+          if (invoice.number.isNotEmpty) invoiceNumber = invoice.number;
+        } catch (_) {
+          // Sin número oficial: se usa el respaldo local.
+        }
+      }
+      await ref.read(receiptServiceProvider).shareReceipt(
+            transaction,
+            providerName: providerName,
+            invoiceNumber: invoiceNumber,
+          );
     } catch (e) {
       if (mounted) showErrorSnackBar(context, e);
     } finally {
@@ -191,10 +205,21 @@ class _TransactionDetailBodyState
     final l10n = AppLocalizations.of(context);
     setState(() => _busy = true);
     try {
-      await ref
+      // Reembolso con políticas (US26/US33): el backend calcula el monto
+      // según la antelación de la cancelación y devuelve la política aplicada.
+      final result = await ref
           .read(transactionActionsProvider)
           .requestRefund(transaction.id);
-      if (mounted) showSuccessSnackBar(context, l10n.refundProcessed);
+      if (!mounted) return;
+      showSuccessSnackBar(
+        context,
+        result.policy.isEmpty
+            ? l10n.refundProcessed
+            : l10n.refundPolicyApplied(
+                result.policy,
+                CurrencyFormatter.format(result.refundedAmount),
+              ),
+      );
     } catch (e) {
       if (mounted) showErrorSnackBar(context, e);
     } finally {

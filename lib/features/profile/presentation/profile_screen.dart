@@ -18,6 +18,7 @@ import 'package:wheelspe_provider/shared/widgets/error_state.dart';
 import 'package:wheelspe_provider/shared/widgets/rating_stars.dart';
 import 'package:wheelspe_provider/shared/widgets/shimmer_card.dart';
 import 'package:wheelspe_provider/shared/widgets/snackbars.dart';
+import 'package:wheelspe_provider/shared/widgets/wheelspe_button.dart';
 import 'package:wheelspe_provider/shared/widgets/wheelspe_card.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -281,7 +282,12 @@ class _ProfileBody extends ConsumerWidget {
                   label: l10n.withdrawFunds,
                   button: true,
                   child: ElevatedButton.icon(
-                    onPressed: () => _showWithdrawSheet(context, l10n),
+                    onPressed: () => _showWithdrawSheet(
+                      context,
+                      ref,
+                      l10n,
+                      summary?.balance ?? 0,
+                    ),
                     icon: const Icon(Icons.arrow_outward, size: 18),
                     label: Text(l10n.withdrawFunds),
                     style: ElevatedButton.styleFrom(
@@ -380,35 +386,130 @@ class _ProfileBody extends ConsumerWidget {
     );
   }
 
-  void _showWithdrawSheet(BuildContext context, AppLocalizations l10n) {
+  void _showWithdrawSheet(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    double balance,
+  ) {
     showModalBottomSheet<void>(
       context: context,
-      builder: (sheetContext) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
+      isScrollControlled: true,
+      builder: (sheetContext) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
+        ),
+        child: _WithdrawSheet(balance: balance),
+      ),
+    );
+  }
+}
+
+/// Formulario real de retiro: monto, método y destino → POST /withdrawals.
+class _WithdrawSheet extends ConsumerStatefulWidget {
+  final double balance;
+
+  const _WithdrawSheet({required this.balance});
+
+  @override
+  ConsumerState<_WithdrawSheet> createState() => _WithdrawSheetState();
+}
+
+class _WithdrawSheetState extends ConsumerState<_WithdrawSheet> {
+  final _formKey = GlobalKey<FormState>();
+  final _amountController = TextEditingController();
+  final _destinationController = TextEditingController();
+  String _method = 'yape';
+  bool _submitting = false;
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    _destinationController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _submitting = true);
+    final l10n = AppLocalizations.of(context);
+    try {
+      await ref.read(transactionActionsProvider).requestWithdrawal(
+            amount: double.parse(_amountController.text.trim()),
+            method: _method,
+            destination: _destinationController.text.trim(),
+          );
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      showSuccessSnackBar(context, l10n.withdrawRequested);
+    } catch (e) {
+      if (mounted) showErrorSnackBar(context, e);
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Form(
+          key: _formKey,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(l10n.withdrawVia, style: AppTextStyles.title),
-              const SizedBox(height: 16),
-              for (final (label, icon) in [
-                (l10n.yape, Icons.qr_code_2),
-                (l10n.plin, Icons.bolt_outlined),
-                (l10n.card, Icons.credit_card_outlined),
-              ])
-                ListTile(
-                  leading: Icon(icon, color: AppColors.primary),
-                  title: Text(label, style: AppTextStyles.body),
-                  trailing: const Icon(
-                    Icons.chevron_right,
-                    color: AppColors.textSecondary,
-                  ),
-                  onTap: () {
-                    Navigator.of(sheetContext).pop();
-                    showSuccessSnackBar(context, l10n.withdrawRequested);
-                  },
+              Text(l10n.withdrawFunds, style: AppTextStyles.title),
+              const SizedBox(height: 4),
+              Text(
+                l10n.availableToWithdraw(
+                  CurrencyFormatter.format(widget.balance),
                 ),
+                style: AppTextStyles.bodySecondary,
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _amountController,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(labelText: l10n.withdrawAmount),
+                validator: (v) {
+                  final amount = double.tryParse((v ?? '').trim()) ?? 0;
+                  if (amount <= 0) return l10n.requiredField;
+                  if (amount > widget.balance) return l10n.insufficientBalance;
+                  return null;
+                },
+              ),
+              const SizedBox(height: 12),
+              Text(l10n.withdrawMethod, style: AppTextStyles.subtitle),
+              const SizedBox(height: 8),
+              SegmentedButton<String>(
+                segments: [
+                  ButtonSegment(value: 'yape', label: Text(l10n.yape)),
+                  ButtonSegment(value: 'plin', label: Text(l10n.plin)),
+                  ButtonSegment(value: 'bank', label: Text(l10n.card)),
+                ],
+                selected: {_method},
+                showSelectedIcon: false,
+                onSelectionChanged: (s) => setState(() => _method = s.first),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _destinationController,
+                decoration:
+                    InputDecoration(labelText: l10n.withdrawDestination),
+                validator: (v) =>
+                    (v ?? '').trim().isEmpty ? l10n.requiredField : null,
+              ),
+              const SizedBox(height: 20),
+              WheelsPeButton(
+                label: l10n.withdrawConfirm,
+                loading: _submitting,
+                onPressed: _submit,
+              ),
+              const SizedBox(height: 8),
             ],
           ),
         ),

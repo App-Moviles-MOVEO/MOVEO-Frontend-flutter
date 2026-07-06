@@ -812,6 +812,24 @@ abstract class AppLocalizations {
   /// **'Documentos guardados'**
   String get documentsSaved;
 
+  /// No description provided for @ownershipPending.
+  ///
+  /// In es, this message translates to:
+  /// **'Acreditación en revisión'**
+  String get ownershipPending;
+
+  /// No description provided for @ownershipApproved.
+  ///
+  /// In es, this message translates to:
+  /// **'Propiedad acreditada'**
+  String get ownershipApproved;
+
+  /// No description provided for @ownershipRejected.
+  ///
+  /// In es, this message translates to:
+  /// **'Acreditación rechazada'**
+  String get ownershipRejected;
+
   /// No description provided for @documentsCount.
   ///
   /// In es, this message translates to:
@@ -1177,6 +1195,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Publicar ruta'**
   String get publishRouteButton;
+
+  /// No description provided for @institutionalEmailRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'El carpooling requiere un correo institucional (@upc.edu.pe). Actualiza tu correo para publicar rutas.'**
+  String get institutionalEmailRequired;
+
+  /// No description provided for @capacityFull.
+  ///
+  /// In es, this message translates to:
+  /// **'Aforo completo: no quedan asientos disponibles. Libera un cupo antes de aceptar.'**
+  String get capacityFull;
 
   /// No description provided for @routePublished.
   ///
@@ -1634,6 +1664,60 @@ abstract class AppLocalizations {
   /// **'Solicitud de retiro enviada'**
   String get withdrawRequested;
 
+  /// No description provided for @withdrawAmount.
+  ///
+  /// In es, this message translates to:
+  /// **'Monto a retirar'**
+  String get withdrawAmount;
+
+  /// No description provided for @withdrawDestination.
+  ///
+  /// In es, this message translates to:
+  /// **'Número o cuenta de destino'**
+  String get withdrawDestination;
+
+  /// No description provided for @withdrawMethod.
+  ///
+  /// In es, this message translates to:
+  /// **'Método de retiro'**
+  String get withdrawMethod;
+
+  /// No description provided for @withdrawConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'Solicitar retiro'**
+  String get withdrawConfirm;
+
+  /// No description provided for @availableToWithdraw.
+  ///
+  /// In es, this message translates to:
+  /// **'Disponible: {amount}'**
+  String availableToWithdraw(String amount);
+
+  /// No description provided for @insufficientBalance.
+  ///
+  /// In es, this message translates to:
+  /// **'El monto supera tu saldo disponible'**
+  String get insufficientBalance;
+
+  /// No description provided for @withdrawalsHistory.
+  ///
+  /// In es, this message translates to:
+  /// **'Retiros'**
+  String get withdrawalsHistory;
+
+  /// No description provided for @noWithdrawals.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no has solicitado retiros'**
+  String get noWithdrawals;
+
+  /// No description provided for @refundPolicyApplied.
+  ///
+  /// In es, this message translates to:
+  /// **'Reembolso procesado ({policy}): {amount}'**
+  String refundPolicyApplied(String policy, String amount);
+
   /// No description provided for @selectDate.
   ///
   /// In es, this message translates to:
@@ -1657,6 +1741,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Calificar usuario'**
   String get rateUser;
+
+  /// No description provided for @rateRenter.
+  ///
+  /// In es, this message translates to:
+  /// **'Calificar arrendatario'**
+  String get rateRenter;
 
   /// No description provided for @comment.
   ///

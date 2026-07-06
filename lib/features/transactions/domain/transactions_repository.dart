@@ -8,5 +8,18 @@ abstract class TransactionsRepository {
 
   Future<List<InvoiceModel>> getMyInvoices(String userId);
 
-  Future<void> requestRefund(String id);
+  Future<RefundResult> requestRefund(String id, {String? reason});
+
+  Future<InvoiceModel> getRentalInvoice(String rentalId);
+
+  Future<WalletBalance> getWallet(String userId);
+
+  Future<List<WithdrawalModel>> getWithdrawals(String userId);
+
+  Future<WithdrawalModel> requestWithdrawal({
+    required String userId,
+    required double amount,
+    required String method,
+    required String destination,
+  });
 }

@@ -36,6 +36,11 @@ class VehicleModel {
   /// Documentos que acreditan la propiedad (US05). Claves:
   /// `propertyCardFront`, `propertyCardBack`, `soat`.
   final Map<String, String> documents;
+
+  /// Estado de acreditación de propiedad que resuelve un admin:
+  /// not_submitted | pending | approved | rejected.
+  final String ownershipStatus;
+  final String? ownershipRejectionReason;
   final VehicleStatus status;
   final int monthReservations;
   final double monthEarnings;
@@ -54,6 +59,8 @@ class VehicleModel {
     this.address = '',
     this.photos = const [],
     this.documents = const {},
+    this.ownershipStatus = 'not_submitted',
+    this.ownershipRejectionReason,
     this.status = VehicleStatus.available,
     this.monthReservations = 0,
     this.monthEarnings = 0,
@@ -97,6 +104,9 @@ class VehicleModel {
           ? (json['documents'] as Map)
               .map((k, v) => MapEntry(k.toString(), v.toString()))
           : const {},
+      ownershipStatus:
+          (json['ownershipStatus'] as String?) ?? 'not_submitted',
+      ownershipRejectionReason: json['ownershipRejectionReason'] as String?,
       status: VehicleStatus.fromString(json['status'] as String?),
       monthReservations: (json['monthReservations'] as num?)?.toInt() ?? 0,
       monthEarnings: (json['monthEarnings'] as num?)?.toDouble() ?? 0,
@@ -128,8 +138,13 @@ class VehicleModel {
         'dailyPrice': pricePerDay,
         'depositAmount': 0,
         'description': description,
-        'images': photos,
+        // Las fotos y documentos locales se suben por multipart después de
+        // crear el vehículo (POST /vehicles/{id}/images y /documents); aquí
+        // solo van URLs ya públicas.
+        'images': photos.where(_isRemoteUrl).toList(),
         'bodyType': category,
-        if (documents.isNotEmpty) 'documents': documents,
       };
+
+  static bool _isRemoteUrl(String value) =>
+      value.startsWith('http://') || value.startsWith('https://');
 }

@@ -85,6 +85,26 @@ class ReservationActions {
     _invalidate(reservation);
   }
 
+  /// Califica al arrendatario de una reserva completada.
+  Future<void> rateRenter(
+    ReservationModel reservation,
+    int score,
+    String comment,
+  ) async {
+    final raterId = await _ref.read(currentUserIdProvider.future);
+    if (raterId == null || raterId.isEmpty) {
+      throw StateError('No hay sesión activa');
+    }
+    await _repo.rateRenter(
+      rentalId: reservation.id,
+      raterId: raterId,
+      rateeId: reservation.renterId,
+      score: score,
+      comment: comment,
+    );
+    _invalidate(reservation);
+  }
+
   void _invalidate(ReservationModel reservation) {
     _ref.invalidate(reservationDetailProvider(reservation.id));
     _ref.invalidate(vehicleReservationsProvider(reservation.vehicleId));

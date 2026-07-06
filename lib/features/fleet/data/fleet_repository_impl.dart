@@ -17,13 +17,63 @@ class FleetRepositoryImpl implements FleetRepository {
   @override
   Future<VehicleModel> getVehicle(String id) => _remote.getVehicle(id);
 
+  /// Publica en tres pasos: crea el vehículo, sube las fotos locales por
+  /// multipart y luego los documentos de propiedad (US05). Si la subida de
+  /// archivos falla, el vehículo ya creado se devuelve igualmente.
   @override
-  Future<VehicleModel> publishVehicle(VehicleModel vehicle, String ownerId) =>
-      _remote.createVehicle(vehicle.toCreateJson(ownerId));
+  Future<VehicleModel> publishVehicle(
+    VehicleModel vehicle,
+    String ownerId,
+  ) async {
+    var created = await _remote.createVehicle(vehicle.toCreateJson(ownerId));
+    if (created.id.isEmpty) return created;
+
+    final localPhotos =
+        vehicle.photos.where((p) => !p.startsWith('http')).toList();
+    if (localPhotos.isNotEmpty) {
+      try {
+        await _remote.uploadVehicleImages(created.id, localPhotos);
+      } catch (_) {
+        // El vehículo existe; las fotos podrán reintentarse después.
+      }
+    }
+    if (vehicle.documents.isNotEmpty) {
+      try {
+        created = await _remote.uploadVehicleDocuments(
+          created.id,
+          vehicle.documents,
+        );
+      } catch (_) {
+        // Ídem: los documentos se pueden completar desde el detalle.
+      }
+    }
+    return created;
+  }
 
   @override
   Future<void> updateVehicle(String id, Map<String, dynamic> changes) =>
       _remote.updateVehicle(id, changes);
+
+  @override
+  Future<VehicleModel> uploadOwnershipDocuments(
+    String id,
+    Map<String, String> docPaths,
+  ) =>
+      _remote.uploadVehicleDocuments(id, docPaths);
+
+  @override
+  Future<void> submitInspection({
+    required String rentalId,
+    required String type,
+    required Map<String, String> photosByPoint,
+    String? createdById,
+  }) =>
+      _remote.uploadInspection(
+        rentalId: rentalId,
+        type: type,
+        photosByPoint: photosByPoint,
+        createdById: createdById,
+      );
 
   @override
   Future<void> changeStatus(String id, VehicleStatus status) =>
@@ -92,4 +142,22 @@ class FleetRepositoryImpl implements FleetRepository {
 
   @override
   Future<void> cancelReservation(String id) => _remote.cancelReservation(id);
+
+  @override
+  Future<void> rateRenter({
+    required String rentalId,
+    required String raterId,
+    required String rateeId,
+    required int score,
+    String comment = '',
+  }) =>
+      _remote.rateRenter({
+        'reviewerId': raterId,
+        'reviewedUserId': rateeId,
+        'rating': score,
+        'type': 'owner_to_renter',
+        if (comment.isNotEmpty) 'comment': comment,
+        // El backend espera rentalId numérico; 0 = sin FK (validado en backend).
+        'rentalId': int.tryParse(rentalId) ?? 0,
+      });
 }

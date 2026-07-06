@@ -54,12 +54,12 @@ class RouteActions {
   }
 
   Future<void> start(String routeId) async {
-    await _repo.startRoute(routeId);
+    await _repo.startRoute(routeId, await _requireOwnerId());
     _invalidate(routeId);
   }
 
   Future<void> complete(String routeId) async {
-    await _repo.completeRoute(routeId);
+    await _repo.completeRoute(routeId, await _requireOwnerId());
     _invalidate(routeId);
   }
 
@@ -77,7 +77,7 @@ class RouteActions {
       );
 
   Future<void> cancel(String routeId) async {
-    await _repo.cancelRoute(routeId);
+    await _repo.cancelRoute(routeId, await _requireOwnerId());
     _invalidate(routeId);
   }
 

@@ -76,6 +76,7 @@ class PassengersScreen extends ConsumerWidget {
                         routeId: routeId,
                         passenger: p,
                         showActions: manageable,
+                        availableSeats: route.availableSeats,
                       ),
                     ),
                   const SizedBox(height: 16),

@@ -14,8 +14,8 @@ class TransactionsRepositoryImpl implements TransactionsRepository {
   @override
   Future<TransactionModel> getTransaction(String id) => _remote.getById(id);
 
-  /// El backend NO tiene `/invoices`. Los comprobantes se derivan de los
-  /// cobros completados y el PDF se genera en el dispositivo (ver detalle).
+  /// Comprobantes derivados de los cobros completados. El número oficial
+  /// lo emite el backend en `GET /rentals/{id}/invoice` (ver detalle).
   @override
   Future<List<InvoiceModel>> getMyInvoices(String userId) async {
     final txs = await _remote.getByRecipient(userId);
@@ -32,5 +32,31 @@ class TransactionsRepositoryImpl implements TransactionsRepository {
   }
 
   @override
-  Future<void> requestRefund(String id) => _remote.refund(id);
+  Future<RefundResult> requestRefund(String id, {String? reason}) =>
+      _remote.refund(id, reason: reason);
+
+  @override
+  Future<InvoiceModel> getRentalInvoice(String rentalId) =>
+      _remote.getInvoice(rentalId);
+
+  @override
+  Future<WalletBalance> getWallet(String userId) => _remote.getWallet(userId);
+
+  @override
+  Future<List<WithdrawalModel>> getWithdrawals(String userId) =>
+      _remote.getWithdrawals(userId);
+
+  @override
+  Future<WithdrawalModel> requestWithdrawal({
+    required String userId,
+    required double amount,
+    required String method,
+    required String destination,
+  }) =>
+      _remote.requestWithdrawal(
+        userId: userId,
+        amount: amount,
+        method: method,
+        destination: destination,
+      );
 }

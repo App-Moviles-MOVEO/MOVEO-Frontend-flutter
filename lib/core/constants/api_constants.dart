@@ -34,6 +34,11 @@ class ApiConstants {
   static const String vehicles = '/vehicles';
   static String vehicleById(String id) => '/vehicles/$id';
   static String vehicleAvailability(String id) => '/vehicles/$id/availability';
+  static String vehicleImages(String id) => '/vehicles/$id/images';
+  static String vehicleDocuments(String id) => '/vehicles/$id/documents';
+
+  // Subida genérica de archivos — /files
+  static const String files = '/files';
 
   // Reservas / Alquileres — /rentals
   static const String rentals = '/rentals';
@@ -41,6 +46,8 @@ class ApiConstants {
   static String rentalById(String id) => '/rentals/$id';
   static String rentalPay(String id) => '/rentals/$id/pay';
   static String rentalsByUser(String userId) => '/rentals/user/$userId';
+  static String rentalInspections(String id) => '/rentals/$id/inspections';
+  static String rentalInvoice(String id) => '/rentals/$id/invoice';
 
   // Carpooling / Rutas — /adventure-routes
   static const String routes = '/adventure-routes';
@@ -54,6 +61,9 @@ class ApiConstants {
       '/adventure-routes/$routeId/passengers/$passengerId/accept';
   static String routePassengerReject(String routeId, String passengerId) =>
       '/adventure-routes/$routeId/passengers/$passengerId/reject';
+  static String routeStart(String id) => '/adventure-routes/$id/start';
+  static String routeComplete(String id) => '/adventure-routes/$id/complete';
+  static String routeCancel(String id) => '/adventure-routes/$id/cancel';
 
   // Pagos — /Payments
   static const String payments = '/Payments';
@@ -61,6 +71,15 @@ class ApiConstants {
   static String paymentsByRecipient(String id) => '/Payments/recipient/$id';
   static String paymentsByPayer(String id) => '/Payments/payer/$id';
   static String paymentsByRental(String id) => '/Payments/rental/$id';
+  static String paymentRefund(String id) => '/payments/$id/refund';
+
+  // Wallet y retiros — /wallet · /withdrawals
+  static String wallet(String userId) => '/wallet/$userId';
+  static const String withdrawals = '/withdrawals';
+  static String withdrawalsByUser(String userId) => '/withdrawals/user/$userId';
+
+  // Dispositivos para push — /users/{id}/devices
+  static String userDevices(String userId) => '/users/$userId/devices';
 
   // Reseñas de vehículo — /Reviews · Reseñas entre usuarios — /user-reviews
   static const String reviews = '/Reviews';

@@ -50,8 +50,40 @@ class RoutesRemoteDataSource {
     }
   }
 
+  /// Transiciones de estado dedicadas del backend. Si el endpoint aún no
+  /// existe (404/405), cae al PUT genérico con `status`.
+  Future<void> startRoute(String id, String ownerId) =>
+      _transition(ApiConstants.routeStart(id), ownerId, id, 'in_progress');
+
+  Future<void> completeRoute(String id, String ownerId) =>
+      _transition(ApiConstants.routeComplete(id), ownerId, id, 'completed');
+
+  Future<void> cancelRoute(String id, String ownerId) =>
+      _transition(ApiConstants.routeCancel(id), ownerId, id, 'cancelled');
+
+  Future<void> _transition(
+    String path,
+    String ownerId,
+    String id,
+    String fallbackStatus,
+  ) async {
+    try {
+      await _dio.post<dynamic>(
+        path,
+        queryParameters: {'ownerId': ownerId},
+      );
+    } on DioException catch (e) {
+      final code = e.response?.statusCode;
+      if (code == 404 || code == 405) {
+        await setStatus(id, fallbackStatus);
+        return;
+      }
+      throwAsAppException(e);
+    }
+  }
+
   /// Cambia el estado de la ruta vía PUT /adventure-routes/{id}
-  /// (el backend no expone un PATCH/transición dedicado).
+  /// (respaldo cuando no hay endpoint de transición dedicado).
   Future<void> setStatus(String id, String status) async {
     try {
       await _dio

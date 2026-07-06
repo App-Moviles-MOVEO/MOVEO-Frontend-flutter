@@ -1,8 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wheelspe_provider/core/utils/validators.dart';
 import 'package:wheelspe_provider/features/auth/data/auth_models.dart';
 import 'package:wheelspe_provider/features/fleet/data/reservation_model.dart';
 import 'package:wheelspe_provider/features/fleet/data/vehicle_model.dart';
+import 'package:wheelspe_provider/features/profile/presentation/profile_providers.dart';
 import 'package:wheelspe_provider/features/routes/data/route_model.dart';
+import 'package:wheelspe_provider/features/transactions/data/transaction_model.dart';
 
 void main() {
   group('UserModel.fromJson', () {
@@ -199,8 +202,33 @@ void main() {
     });
   });
 
+  group('Validators.isInstitutionalEmail (carpooling)', () {
+    test('acepta correos del dominio institucional y sus subdominios', () {
+      expect(Validators.isInstitutionalEmail('u201812345@upc.edu.pe'), isTrue);
+      expect(
+        Validators.isInstitutionalEmail('nombre@u.upc.edu.pe'),
+        isTrue,
+      );
+      expect(
+        Validators.isInstitutionalEmail('  MAYUS@UPC.EDU.PE  '),
+        isTrue,
+      );
+    });
+
+    test('rechaza correos personales o inválidos', () {
+      expect(Validators.isInstitutionalEmail('andreow@123.com'), isFalse);
+      expect(Validators.isInstitutionalEmail('abigail@gmail.com'), isFalse);
+      expect(
+        Validators.isInstitutionalEmail('falso@upc.edu.pe.evil.com'),
+        isFalse,
+      );
+      expect(Validators.isInstitutionalEmail(''), isFalse);
+      expect(Validators.isInstitutionalEmail(null), isFalse);
+    });
+  });
+
   group('VehicleModel documentos de propiedad (US05)', () {
-    test('toCreateJson incluye documents cuando hay documentos', () {
+    test('toCreateJson NO incluye documents (van por multipart)', () {
       const vehicle = VehicleModel(
         id: '',
         brand: 'Toyota',
@@ -211,19 +239,14 @@ void main() {
         pricePerDay: 120,
         documents: {
           'propertyCardFront': '/tmp/front.jpg',
-          'propertyCardBack': '/tmp/back.jpg',
           'soat': '/tmp/soat.jpg',
         },
       );
-      final json = vehicle.toCreateJson('7');
-      expect(json['documents'], {
-        'propertyCardFront': '/tmp/front.jpg',
-        'propertyCardBack': '/tmp/back.jpg',
-        'soat': '/tmp/soat.jpg',
-      });
+      // Los documentos se suben aparte (POST /vehicles/{id}/documents).
+      expect(vehicle.toCreateJson('7').containsKey('documents'), isFalse);
     });
 
-    test('toCreateJson omite documents cuando está vacío', () {
+    test('toCreateJson solo envía imágenes remotas, no rutas locales', () {
       const vehicle = VehicleModel(
         id: '',
         brand: 'Kia',
@@ -232,18 +255,74 @@ void main() {
         plate: 'XYZ-987',
         category: 'Sedán',
         pricePerDay: 100,
+        photos: [
+          '/data/user/0/local.jpg',
+          'https://cdn/remota.jpg',
+        ],
       );
-      expect(vehicle.toCreateJson('7').containsKey('documents'), isFalse);
+      // Las fotos locales se suben por multipart tras crear el vehículo.
+      expect(vehicle.toCreateJson('7')['images'], ['https://cdn/remota.jpg']);
     });
 
-    test('fromJson parsea documents si el backend los devuelve', () {
+    test('fromJson parsea documents y ownershipStatus del backend', () {
       final vehicle = VehicleModel.fromJson({
         'id': 5,
         'brand': 'Toyota',
         'model': 'Yaris',
         'documents': {'soat': 'https://cdn/soat.jpg'},
+        'ownershipStatus': 'pending',
       });
       expect(vehicle.documents['soat'], 'https://cdn/soat.jpg');
+      expect(vehicle.ownershipStatus, 'pending');
+    });
+  });
+
+  group('UserModel badges y puntualidad server-side (US36)', () {
+    test('usa badges del backend cuando vienen en stats', () {
+      final user = UserModel.fromJson({
+        'id': 4,
+        'stats': {
+          'completedRentals': 1,
+          'reputation': 3.0,
+          'onTimeRate': 0.5,
+          'badges': ['VERIFIED', 'PUNCTUAL'],
+        },
+      });
+      final badges = ProviderBadges.fromUser(user);
+      // Aunque la reputación/onTime local no calificaría, se respeta el backend.
+      expect(badges.verified, isTrue);
+      expect(badges.punctual, isTrue);
+      expect(badges.topRenter, isFalse);
+    });
+
+    test('puntual usa onTimeRate real cuando no hay badges del backend', () {
+      final user = UserModel.fromJson({
+        'id': 4,
+        'stats': {'completedRentals': 5, 'onTimeRate': 0.95},
+      });
+      expect(ProviderBadges.fromUser(user).punctual, isTrue);
+    });
+  });
+
+  group('WalletBalance / RefundResult', () {
+    test('WalletBalance.fromJson lee balance real', () {
+      final w = WalletBalance.fromJson({
+        'balance': 350.0,
+        'pendingWithdrawals': 50.0,
+        'totalEarned': 900.0,
+      });
+      expect(w.balance, 350.0);
+      expect(w.pendingWithdrawals, 50.0);
+    });
+
+    test('RefundResult.fromJson lee monto y política', () {
+      final r = RefundResult.fromJson({
+        'refundedAmount': 58.0,
+        'policy': '50%',
+        'status': 'refunded',
+      });
+      expect(r.refundedAmount, 58.0);
+      expect(r.policy, '50%');
     });
   });
 }

@@ -112,7 +112,11 @@ class ReservationModel {
       renterName = (renter['fullName'] ?? renter['name'] ?? renterName) as String;
       renterAvatar = renter['avatarUrl'] as String?;
       renterRating = (renter['reputation'] as num?)?.toDouble() ?? 0;
-      renterVerified = renter['verificationStatus'] == 'VERIFIED';
+      // El backend ahora embebe kycStatus del arrendatario; "approved"
+      // equivale a verificado (US16: aforo/confianza).
+      final kyc = (renter['kycStatus'] as String?)?.toLowerCase();
+      renterVerified =
+          renter['verificationStatus'] == 'VERIFIED' || kyc == 'approved';
     }
     return ReservationModel(
       id: json['id']?.toString() ?? '',
