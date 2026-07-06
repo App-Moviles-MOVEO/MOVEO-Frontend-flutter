@@ -889,4 +889,255 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get ratingSent => 'Calificación enviada';
+
+  @override
+  String get changePassword => 'Cambiar contraseña';
+
+  @override
+  String get changePasswordSubtitle =>
+      'Ingresa tu contraseña actual y elige una nueva';
+
+  @override
+  String get currentPassword => 'Contraseña actual';
+
+  @override
+  String get newPassword => 'Nueva contraseña';
+
+  @override
+  String get confirmNewPassword => 'Confirmar nueva contraseña';
+
+  @override
+  String get passwordChanged => 'Contraseña actualizada correctamente';
+
+  @override
+  String get emergency => 'Emergencia';
+
+  @override
+  String get emergencyButton => 'SOS · Emergencia';
+
+  @override
+  String get emergencyTitle => '¿Activar alerta de emergencia?';
+
+  @override
+  String get emergencyMessage =>
+      'Se enviará una alerta con tu ubicación al equipo de soporte y quedará registrada. Úsalo solo ante una situación real.';
+
+  @override
+  String get emergencyConfirm => 'Enviar alerta';
+
+  @override
+  String get emergencySent =>
+      'Alerta de emergencia enviada. El equipo de soporte fue notificado.';
+
+  @override
+  String emergencyDescription(String route) {
+    return 'ALERTA DE EMERGENCIA activada por el conductor durante la ruta $route.';
+  }
+
+  @override
+  String get startPinTitle => 'Validar entrega con PIN';
+
+  @override
+  String get startPinSubtitle =>
+      'Pide al arrendatario el PIN de 4 dígitos que ve en su app y escríbelo para confirmar la entrega.';
+
+  @override
+  String get pinLabel => 'PIN de 4 dígitos';
+
+  @override
+  String get invalidPin => 'PIN incorrecto. Verifícalo con el arrendatario.';
+
+  @override
+  String get pinValidated => 'PIN validado. Entrega confirmada.';
+
+  @override
+  String tripPinShare(String pin) {
+    return 'PIN de entrega: $pin. Compártelo con el proveedor al recibir el vehículo.';
+  }
+
+  @override
+  String get reputationThreshold => 'Umbral de reputación mínima';
+
+  @override
+  String get reputationThresholdSubtitle =>
+      'Solicitudes de pasajeros por debajo de este umbral requieren tu confirmación manual; por encima se pueden aceptar directo.';
+
+  @override
+  String reputationThresholdValue(String value) {
+    return 'Reputación mínima: $value';
+  }
+
+  @override
+  String get reputationThresholdSaved => 'Umbral guardado';
+
+  @override
+  String get reputationThresholdOff => 'Sin umbral (aceptar a cualquiera)';
+
+  @override
+  String lowReputationWarning(String rating, String threshold) {
+    return 'Este pasajero ($rating) está por debajo de tu umbral ($threshold). ¿Aceptar de todos modos?';
+  }
+
+  @override
+  String get acceptAnyway => 'Aceptar de todos modos';
+
+  @override
+  String get settings => 'Configuración';
+
+  @override
+  String get deleteAccount => 'Eliminar mi cuenta';
+
+  @override
+  String get deleteAccountSubtitle =>
+      'Baja voluntaria y eliminación de tus datos';
+
+  @override
+  String get deleteAccountWarning =>
+      'Esta acción elimina tu cuenta y tus datos de forma permanente. No se puede deshacer. Escribe ELIMINAR para confirmar.';
+
+  @override
+  String get deleteConfirmWord => 'ELIMINAR';
+
+  @override
+  String get deleteAccountConfirm => 'Eliminar definitivamente';
+
+  @override
+  String get deleteAccountTypeHint => 'Escribe ELIMINAR';
+
+  @override
+  String get accountDeleted => 'Tu cuenta fue eliminada';
+
+  @override
+  String get payoutMethods => 'Métodos de cobro';
+
+  @override
+  String get payoutMethodsSubtitle =>
+      'Guarda tus cuentas para recibir tus retiros más rápido';
+
+  @override
+  String get addPayoutMethod => 'Agregar método de cobro';
+
+  @override
+  String get noPayoutMethods => 'Aún no has agregado métodos de cobro';
+
+  @override
+  String get payoutMethodSaved => 'Método de cobro guardado';
+
+  @override
+  String get payoutAlias => 'Alias (ej. Mi Yape)';
+
+  @override
+  String get promotions => 'Promociones';
+
+  @override
+  String get promotionsSubtitle =>
+      'Crea cupones y ofertas temporales para tus alquileres y rutas';
+
+  @override
+  String get noPromotions => 'Aún no has creado promociones';
+
+  @override
+  String get addPromotion => 'Nueva promoción';
+
+  @override
+  String get editPromotion => 'Editar promoción';
+
+  @override
+  String get promoCode => 'Código del cupón';
+
+  @override
+  String get promoCodeHint => 'Ej. VERANO20';
+
+  @override
+  String get promoTitle => 'Título / descripción';
+
+  @override
+  String get promoDiscountType => 'Tipo de descuento';
+
+  @override
+  String get promoPercent => 'Porcentaje';
+
+  @override
+  String get promoFixed => 'Monto fijo';
+
+  @override
+  String get promoValue => 'Valor del descuento';
+
+  @override
+  String get promoStart => 'Inicio';
+
+  @override
+  String get promoEnd => 'Fin';
+
+  @override
+  String get promoMinReputation => 'Reputación mínima (recompensa)';
+
+  @override
+  String get promoMinReputationHint =>
+      '0 = para todos · mayor = solo usuarios con buena reputación';
+
+  @override
+  String get promoSaved => 'Promoción guardada';
+
+  @override
+  String get promoDeleted => 'Promoción eliminada';
+
+  @override
+  String get promoActive => 'Vigente';
+
+  @override
+  String get promoScheduled => 'Programada';
+
+  @override
+  String get promoExpired => 'Expirada';
+
+  @override
+  String get promoDisabled => 'Desactivada';
+
+  @override
+  String promoValidity(String start, String end) {
+    return '$start → $end';
+  }
+
+  @override
+  String promoRewardTag(String value) {
+    return 'Recompensa ≥ $value★';
+  }
+
+  @override
+  String get applyCoupon => 'Aplicar cupón';
+
+  @override
+  String get applyCouponSubtitle =>
+      'Simula el descuento de un cupón sobre un monto (la misma lógica que verá el arrendatario).';
+
+  @override
+  String get couponAmount => 'Monto base (S/)';
+
+  @override
+  String get couponReputationOptional => 'Reputación del cliente (opcional)';
+
+  @override
+  String get couponApply => 'Aplicar';
+
+  @override
+  String couponApplied(String discount, String total) {
+    return 'Cupón aplicado: -$discount → total $total';
+  }
+
+  @override
+  String get couponNotFound => 'No existe un cupón con ese código';
+
+  @override
+  String get couponNotStarted => 'El cupón aún no está vigente';
+
+  @override
+  String get couponExpired => 'El cupón ya expiró';
+
+  @override
+  String get couponDisabled => 'El cupón está desactivado';
+
+  @override
+  String get couponReputationTooLow =>
+      'El cliente no alcanza la reputación mínima del cupón';
 }

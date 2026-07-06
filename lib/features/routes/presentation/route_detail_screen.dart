@@ -6,6 +6,7 @@ import 'package:wheelspe_provider/core/constants/app_colors.dart';
 import 'package:wheelspe_provider/core/constants/app_text_styles.dart';
 import 'package:wheelspe_provider/core/utils/currency_formatter.dart';
 import 'package:wheelspe_provider/core/utils/date_formatter.dart';
+import 'package:wheelspe_provider/features/incidents/presentation/report_incident_screen.dart';
 import 'package:wheelspe_provider/features/routes/data/route_model.dart';
 import 'package:wheelspe_provider/features/routes/presentation/routes_providers.dart';
 import 'package:wheelspe_provider/l10n/generated/app_localizations.dart';
@@ -66,6 +67,45 @@ class _RouteDetailBodyState extends ConsumerState<_RouteDetailBody> {
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  /// US08: confirma y envía la alerta de emergencia con la ubicación
+  /// aproximada de la ruta al equipo de soporte.
+  Future<void> _confirmEmergency() async {
+    final l10n = AppLocalizations.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.emergencyTitle),
+        content: Text(l10n.emergencyMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AppColors.error),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.emergencyConfirm),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    await _run(() async {
+      final reporterId = await ref.read(currentUserIdProvider.future);
+      if (reporterId == null) throw StateError('Sin sesión activa');
+      await ref.read(incidentsDataSourceProvider).reportEmergency(
+            reporterId: reporterId,
+            description: l10n.emergencyDescription(
+              '${route.origin} → ${route.destination}',
+            ),
+            lat: route.originLat,
+            lng: route.originLng,
+            routeId: route.id,
+          );
+      if (mounted) showSuccessSnackBar(context, l10n.emergencySent);
+    });
   }
 
   @override
@@ -292,6 +332,15 @@ class _RouteDetailBodyState extends ConsumerState<_RouteDetailBody> {
             variant: WheelsPeButtonVariant.success,
             loading: _busy,
             onPressed: () => _run(() => actions.complete(route.id)),
+          ),
+          const SizedBox(height: 12),
+          // US08: alerta de emergencia durante el viaje.
+          WheelsPeButton(
+            label: l10n.emergencyButton,
+            icon: Icons.sos,
+            variant: WheelsPeButtonVariant.danger,
+            loading: _busy,
+            onPressed: _confirmEmergency,
           ),
         ];
       case RouteStatus.completed:
@@ -526,6 +575,54 @@ class _PassengerTileState extends ConsumerState<PassengerTile> {
     }
   }
 
+  /// Aceptar solicitud con control de aforo (US16) y umbral de reputación
+  /// mínima configurable (US30).
+  Future<void> _accept() async {
+    final l10n = AppLocalizations.of(context);
+    final passenger = widget.passenger;
+    final actions = ref.read(routeActionsProvider);
+
+    // Aforo: el backend descuenta el cupo al aceptar.
+    final available = widget.availableSeats;
+    if (available != null && passenger.seats > available) {
+      showInfoSnackBar(context, l10n.capacityFull);
+      return;
+    }
+
+    // Umbral de reputación (US30): si el pasajero está por debajo, se pide
+    // confirmación manual antes de aceptar.
+    final threshold = ref.read(reputationThresholdProvider);
+    if (threshold > 0 && passenger.rating < threshold) {
+      final proceed = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(l10n.reputationThreshold),
+          content: Text(
+            l10n.lowReputationWarning(
+              passenger.rating.toStringAsFixed(1),
+              threshold.toStringAsFixed(1),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(l10n.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(l10n.acceptAnyway),
+            ),
+          ],
+        ),
+      );
+      if (proceed != true) return;
+    }
+
+    await _run(
+      () => actions.acceptPassenger(widget.routeId, passenger.passengerId),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -579,21 +676,7 @@ class _PassengerTileState extends ConsumerState<PassengerTile> {
                   color: AppColors.success,
                   size: 30,
                 ),
-                onPressed: () {
-                  // Control de aforo (US16): el backend descuenta el cupo
-                  // al aceptar, así que no se acepta sin asientos libres.
-                  final available = widget.availableSeats;
-                  if (available != null && passenger.seats > available) {
-                    showInfoSnackBar(context, l10n.capacityFull);
-                    return;
-                  }
-                  _run(
-                    () => actions.acceptPassenger(
-                      widget.routeId,
-                      passenger.passengerId,
-                    ),
-                  );
-                },
+                onPressed: _accept,
               ),
             ),
             Semantics(

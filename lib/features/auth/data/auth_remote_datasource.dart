@@ -129,6 +129,16 @@ class AuthRemoteDataSource {
     }
   }
 
+  /// Baja voluntaria y eliminación de datos (US45): DELETE /users/{id}.
+  /// Es inmediata (sin aprobación de admin).
+  Future<void> deleteUser(String id) async {
+    try {
+      await _dio.delete<dynamic>(ApiConstants.userById(id));
+    } on DioException catch (e) {
+      throwAsAppException(e);
+    }
+  }
+
   /// KYC real: sube los documentos vía `POST /auth/kyc` (multipart/form-data).
   /// Requiere `userId` y al menos uno de los documentos. Devuelve el nuevo
   /// estado (`pending` tras enviarlos).

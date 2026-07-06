@@ -44,6 +44,9 @@ abstract class AuthRepository {
     required String newPassword,
   });
 
+  /// Baja voluntaria: elimina la cuenta en el backend y limpia la sesión.
+  Future<void> deleteAccount();
+
   /// Logout simbólico + limpieza de secure storage.
   Future<void> logout();
 

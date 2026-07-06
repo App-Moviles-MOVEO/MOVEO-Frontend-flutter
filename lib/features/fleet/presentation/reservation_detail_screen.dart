@@ -5,6 +5,7 @@ import 'package:wheelspe_provider/core/constants/app_colors.dart';
 import 'package:wheelspe_provider/core/constants/app_text_styles.dart';
 import 'package:wheelspe_provider/core/utils/currency_formatter.dart';
 import 'package:wheelspe_provider/core/utils/date_formatter.dart';
+import 'package:wheelspe_provider/core/utils/trip_pin.dart';
 import 'package:wheelspe_provider/features/fleet/data/reservation_model.dart';
 import 'package:wheelspe_provider/features/fleet/presentation/fleet_providers.dart';
 import 'package:wheelspe_provider/l10n/generated/app_localizations.dart';
@@ -224,6 +225,72 @@ class _ReservationDetailBodyState
     );
   }
 
+  /// US09: pide el PIN de 4 dígitos que el arrendatario ve en su app,
+  /// lo valida y solo entonces registra la entrega e inicia el checklist.
+  Future<void> _startDeliveryWithPin(ReservationActions actions) async {
+    final l10n = AppLocalizations.of(context);
+    final controller = TextEditingController();
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        String? errorText;
+        return StatefulBuilder(
+          builder: (ctx, setDialogState) => AlertDialog(
+            title: Text(l10n.startPinTitle),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(l10n.startPinSubtitle,
+                    style: AppTextStyles.bodySecondary),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: controller,
+                  keyboardType: TextInputType.number,
+                  maxLength: 4,
+                  autofocus: true,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.headline,
+                  decoration: InputDecoration(
+                    labelText: l10n.pinLabel,
+                    errorText: errorText,
+                    counterText: '',
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text(l10n.cancel),
+              ),
+              FilledButton(
+                onPressed: () {
+                  if (TripPin.validate(reservation.id, controller.text)) {
+                    Navigator.pop(ctx, true);
+                  } else {
+                    setDialogState(() => errorText = l10n.invalidPin);
+                  }
+                },
+                child: Text(l10n.confirm),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    if (ok != true || !mounted) return;
+    showSuccessSnackBar(context, l10n.pinValidated);
+    await _run(() async {
+      await actions.startRental(reservation);
+      if (mounted) {
+        context.push(
+          '/fleet/${reservation.vehicleId}/checklist'
+          '?tipo=PRE&reservationId=${reservation.id}',
+        );
+      }
+    });
+  }
+
   List<Widget> _buildActions(
     AppLocalizations l10n,
     ReservationActions actions,
@@ -247,19 +314,28 @@ class _ReservationDetailBodyState
         ];
       case ReservationStatus.confirmed:
         return [
+          // Ayuda de demo: el PIN que el arrendatario ve en su app. En
+          // producción este texto vive en la app Renter, no aquí.
+          WheelsPeCard(
+            child: Row(
+              children: [
+                const Icon(Icons.info_outline, color: AppColors.accent),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    l10n.tripPinShare(TripPin.forRental(reservation.id)),
+                    style: AppTextStyles.caption,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
           WheelsPeButton(
             label: l10n.registerVehicleDelivery,
             icon: Icons.vpn_key_outlined,
             loading: _busy,
-            onPressed: () => _run(() async {
-              await actions.startRental(reservation);
-              if (mounted) {
-                context.push(
-                  '/fleet/${reservation.vehicleId}/checklist'
-                  '?tipo=PRE&reservationId=${reservation.id}',
-                );
-              }
-            }),
+            onPressed: () => _startDeliveryWithPin(actions),
           ),
         ];
       case ReservationStatus.inProgress:

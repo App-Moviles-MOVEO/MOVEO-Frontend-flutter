@@ -61,4 +61,35 @@ class IncidentsRemoteDataSource {
       throwAsAppException(e);
     }
   }
+
+  /// Alerta de emergencia (US08): ticket de soporte de máxima prioridad con
+  /// la ubicación del conductor. Queda registrado de inmediato (sin admin).
+  Future<void> reportEmergency({
+    required String reporterId,
+    required String description,
+    double? lat,
+    double? lng,
+    String? routeId,
+  }) async {
+    try {
+      final location =
+          (lat != null && lng != null) ? '\nUbicación: $lat, $lng' : '';
+      await _dio.post<dynamic>(
+        ApiConstants.supportTickets,
+        data: {
+          'userId': reporterId,
+          'type': 'emergency',
+          'category': 'emergency',
+          'priority': 'high',
+          'subject': '🚨 EMERGENCIA',
+          'description': '$description$location',
+          'routeId': ?routeId,
+          'lat': ?lat,
+          'lng': ?lng,
+        },
+      );
+    } on DioException catch (e) {
+      throwAsAppException(e);
+    }
+  }
 }

@@ -21,9 +21,16 @@ import 'package:wheelspe_provider/features/fleet/presentation/vehicle_detail_scr
 import 'package:wheelspe_provider/features/home/presentation/home_screen.dart';
 import 'package:wheelspe_provider/features/incidents/presentation/report_incident_screen.dart';
 import 'package:wheelspe_provider/features/profile/presentation/badges_screen.dart';
+import 'package:wheelspe_provider/features/profile/presentation/change_password_screen.dart';
+import 'package:wheelspe_provider/features/profile/presentation/delete_account_screen.dart';
 import 'package:wheelspe_provider/features/profile/presentation/edit_profile_screen.dart';
 import 'package:wheelspe_provider/features/profile/presentation/kyc_status_screen.dart';
+import 'package:wheelspe_provider/features/profile/presentation/payout_methods_screen.dart';
 import 'package:wheelspe_provider/features/profile/presentation/profile_screen.dart';
+import 'package:wheelspe_provider/features/profile/presentation/reputation_threshold_screen.dart';
+import 'package:wheelspe_provider/features/promotions/presentation/apply_coupon_screen.dart';
+import 'package:wheelspe_provider/features/promotions/presentation/promo_form_screen.dart';
+import 'package:wheelspe_provider/features/promotions/presentation/promotions_screen.dart';
 import 'package:wheelspe_provider/features/routes/presentation/add_route_screen.dart';
 import 'package:wheelspe_provider/features/routes/presentation/passengers_screen.dart';
 import 'package:wheelspe_provider/features/routes/presentation/route_detail_screen.dart';
@@ -240,6 +247,42 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/profile/badges',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const BadgesScreen(),
+      ),
+      GoRoute(
+        path: '/profile/change-password',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const ChangePasswordScreen(),
+      ),
+      GoRoute(
+        path: '/profile/payout-methods',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const PayoutMethodsScreen(),
+      ),
+      GoRoute(
+        path: '/profile/reputation-threshold',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const ReputationThresholdScreen(),
+      ),
+      GoRoute(
+        path: '/profile/delete-account',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const DeleteAccountScreen(),
+      ),
+      // Promociones y cupones (US34/US27/US29). Literales antes de :id.
+      GoRoute(
+        path: '/promotions/new',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const PromoFormScreen(),
+      ),
+      GoRoute(
+        path: '/promotions/apply',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const ApplyCouponScreen(),
+      ),
+      GoRoute(
+        path: '/promotions',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const PromotionsScreen(),
       ),
     ],
   );

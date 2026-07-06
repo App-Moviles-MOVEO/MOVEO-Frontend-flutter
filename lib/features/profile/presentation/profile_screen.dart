@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wheelspe_provider/core/constants/app_colors.dart';
 import 'package:wheelspe_provider/core/constants/app_text_styles.dart';
+import 'package:wheelspe_provider/core/storage/local_storage.dart';
 import 'package:wheelspe_provider/core/utils/currency_formatter.dart';
 import 'package:wheelspe_provider/features/auth/data/auth_models.dart';
 import 'package:wheelspe_provider/features/auth/presentation/auth_providers.dart';
@@ -324,6 +325,27 @@ class _ProfileBody extends ConsumerWidget {
                   label: l10n.badgesSection,
                   onTap: () => context.push('/profile/badges'),
                 ),
+                _MenuTile(
+                  icon: Icons.lock_outline,
+                  label: l10n.changePassword,
+                  onTap: () => context.push('/profile/change-password'),
+                ),
+                _MenuTile(
+                  icon: Icons.account_balance_wallet_outlined,
+                  label: l10n.payoutMethods,
+                  onTap: () => context.push('/profile/payout-methods'),
+                ),
+                _MenuTile(
+                  icon: Icons.tune,
+                  label: l10n.reputationThreshold,
+                  onTap: () =>
+                      context.push('/profile/reputation-threshold'),
+                ),
+                _MenuTile(
+                  icon: Icons.local_offer_outlined,
+                  label: l10n.promotions,
+                  onTap: () => context.push('/promotions'),
+                ),
                 ListTile(
                   leading: const Icon(
                     Icons.language,
@@ -365,6 +387,12 @@ class _ProfileBody extends ConsumerWidget {
                   icon: Icons.description_outlined,
                   label: l10n.termsAndConditions,
                   onTap: () {},
+                ),
+                _MenuTile(
+                  icon: Icons.no_accounts_outlined,
+                  label: l10n.deleteAccount,
+                  color: AppColors.error,
+                  onTap: () => context.push('/profile/delete-account'),
                 ),
                 _MenuTile(
                   icon: Icons.logout,
@@ -421,6 +449,21 @@ class _WithdrawSheetState extends ConsumerState<_WithdrawSheet> {
   final _destinationController = TextEditingController();
   String _method = 'yape';
   bool _submitting = false;
+  late final List<Map<String, String>> _savedMethods;
+
+  @override
+  void initState() {
+    super.initState();
+    // US21: métodos de cobro guardados para rellenar rápido.
+    _savedMethods = ref.read(localStorageProvider).loadPayoutMethods();
+  }
+
+  void _applySaved(Map<String, String> m) {
+    setState(() {
+      _method = m['method'] ?? _method;
+      _destinationController.text = m['destination'] ?? '';
+    });
+  }
 
   @override
   void dispose() {
@@ -469,6 +512,22 @@ class _WithdrawSheetState extends ConsumerState<_WithdrawSheet> {
                 ),
                 style: AppTextStyles.bodySecondary,
               ),
+              if (_savedMethods.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: [
+                    for (final m in _savedMethods)
+                      ActionChip(
+                        avatar: const Icon(Icons.account_balance_wallet_outlined,
+                            size: 16),
+                        label: Text(m['alias'] ?? ''),
+                        onPressed: () => _applySaved(m),
+                      ),
+                  ],
+                ),
+              ],
               const SizedBox(height: 16),
               TextFormField(
                 controller: _amountController,
