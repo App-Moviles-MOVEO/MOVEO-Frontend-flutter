@@ -1,9 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wheelspe_provider/core/utils/trip_pin.dart';
 import 'package:wheelspe_provider/core/utils/validators.dart';
 import 'package:wheelspe_provider/features/auth/data/auth_models.dart';
 import 'package:wheelspe_provider/features/fleet/data/reservation_model.dart';
 import 'package:wheelspe_provider/features/fleet/data/vehicle_model.dart';
 import 'package:wheelspe_provider/features/profile/presentation/profile_providers.dart';
+import 'package:wheelspe_provider/features/promotions/data/promo_model.dart';
 import 'package:wheelspe_provider/features/routes/data/route_model.dart';
 import 'package:wheelspe_provider/features/transactions/data/transaction_model.dart';
 
@@ -118,8 +120,6 @@ void main() {
 
   group('RouteModel contador de asientos (seatsTotal/seatsAvailable)', () {
     test('ocupados = total − disponibles aunque no venga passengers', () {
-      // Contrato real del listado: passengers null, el backend descuenta
-      // seatsAvailable con cada reserva.
       final route = RouteModel.fromJson({
         'id': 2,
         'seatsTotal': 5,
@@ -145,7 +145,6 @@ void main() {
     });
 
     test('detecta asientos reservados sin pasajero registrado', () {
-      // Ruta 2 real: 3 ocupados y passengers vacío → 3 sin registro.
       final route = RouteModel.fromJson({
         'id': 2,
         'seatsTotal': 5,
@@ -154,7 +153,6 @@ void main() {
       });
       expect(route.unregisteredSeats, 3);
 
-      // Con un confirmado de 1 asiento quedan 2 sin registro.
       final withPassenger = RouteModel.fromJson({
         'id': 2,
         'seatsTotal': 5,
@@ -196,7 +194,6 @@ void main() {
       expect(enriched.renterName, 'esther abigail');
       expect(enriched.renterRating, 4.5);
       expect(enriched.renterVerified, isTrue);
-      // El resto se conserva.
       expect(enriched.id, base.id);
       expect(enriched.totalAmount, 116.0);
     });
@@ -205,14 +202,8 @@ void main() {
   group('Validators.isInstitutionalEmail (carpooling)', () {
     test('acepta correos del dominio institucional y sus subdominios', () {
       expect(Validators.isInstitutionalEmail('u201812345@upc.edu.pe'), isTrue);
-      expect(
-        Validators.isInstitutionalEmail('nombre@u.upc.edu.pe'),
-        isTrue,
-      );
-      expect(
-        Validators.isInstitutionalEmail('  MAYUS@UPC.EDU.PE  '),
-        isTrue,
-      );
+      expect(Validators.isInstitutionalEmail('nombre@u.upc.edu.pe'), isTrue);
+      expect(Validators.isInstitutionalEmail('  MAYUS@UPC.EDU.PE  '), isTrue);
     });
 
     test('rechaza correos personales o inválidos', () {
@@ -242,7 +233,6 @@ void main() {
           'soat': '/tmp/soat.jpg',
         },
       );
-      // Los documentos se suben aparte (POST /vehicles/{id}/documents).
       expect(vehicle.toCreateJson('7').containsKey('documents'), isFalse);
     });
 
@@ -260,7 +250,6 @@ void main() {
           'https://cdn/remota.jpg',
         ],
       );
-      // Las fotos locales se suben por multipart tras crear el vehículo.
       expect(vehicle.toCreateJson('7')['images'], ['https://cdn/remota.jpg']);
     });
 
@@ -304,6 +293,24 @@ void main() {
     });
   });
 
+  group('TripPin (US09 validación de entrega)', () {
+    test('es determinístico de 4 dígitos y estable por rental', () {
+      final pin = TripPin.forRental('123');
+      expect(pin.length, 4);
+      expect(int.tryParse(pin), isNotNull);
+      // Mismo id → mismo PIN (ambas apps calculan igual).
+      expect(TripPin.forRental('123'), pin);
+    });
+
+    test('valida el PIN correcto y rechaza el incorrecto', () {
+      final pin = TripPin.forRental('42');
+      expect(TripPin.validate('42', pin), isTrue);
+      expect(TripPin.validate('42', '0000'), isFalse);
+      // Distinto rental → distinto PIN (casi siempre).
+      expect(TripPin.forRental('42') == TripPin.forRental('43'), isFalse);
+    });
+  });
+
   group('WalletBalance / RefundResult', () {
     test('WalletBalance.fromJson lee balance real', () {
       final w = WalletBalance.fromJson({
@@ -323,6 +330,112 @@ void main() {
       });
       expect(r.refundedAmount, 58.0);
       expect(r.policy, '50%');
+    });
+  });
+
+  group('PromoOffer motor de cupones (US27/US29/US34)', () {
+    final hoy = DateTime(2026, 7, 5);
+
+    PromoOffer promo({
+      String code = 'VERANO20',
+      DiscountType type = DiscountType.percent,
+      double value = 20,
+      double minReputation = 0,
+      bool enabled = true,
+      DateTime? start,
+      DateTime? end,
+    }) =>
+        PromoOffer(
+          id: '1',
+          code: code,
+          title: 'Promo',
+          type: type,
+          value: value,
+          startDate: start ?? DateTime(2026, 7, 1),
+          endDate: end ?? DateTime(2026, 7, 31),
+          minReputation: minReputation,
+          enabled: enabled,
+        );
+
+    test('descuento porcentual y fijo se calculan bien', () {
+      expect(promo().discountOn(100), 20);
+      expect(promo(type: DiscountType.fixed, value: 15).discountOn(100), 15);
+      // El fijo nunca supera el monto base.
+      expect(promo(type: DiscountType.fixed, value: 200).discountOn(80), 80);
+    });
+
+    test('aplica un cupón vigente (US27)', () {
+      final r = PromoOffer.apply(
+        offers: [promo()],
+        code: 'verano20',
+        amount: 100,
+        now: hoy,
+      );
+      expect(r.status, CouponStatus.applied);
+      expect(r.discount, 20);
+      expect(r.finalAmount, 80);
+    });
+
+    test('rechaza código inexistente, expirado y no iniciado', () {
+      expect(
+        PromoOffer.apply(offers: [promo()], code: 'NADA', amount: 100, now: hoy)
+            .status,
+        CouponStatus.notFound,
+      );
+      expect(
+        PromoOffer.apply(
+          offers: [promo(end: DateTime(2026, 7, 4))],
+          code: 'VERANO20',
+          amount: 100,
+          now: hoy,
+        ).status,
+        CouponStatus.expired,
+      );
+      expect(
+        PromoOffer.apply(
+          offers: [promo(start: DateTime(2026, 7, 10))],
+          code: 'VERANO20',
+          amount: 100,
+          now: hoy,
+        ).status,
+        CouponStatus.notStarted,
+      );
+    });
+
+    test('recompensa por reputación mínima (US29)', () {
+      final vip = promo(code: 'VIP', minReputation: 4.5);
+      // Cliente por debajo del umbral: bloqueado.
+      expect(
+        PromoOffer.apply(
+                offers: [vip], code: 'VIP', amount: 100, reputation: 4.0, now: hoy)
+            .status,
+        CouponStatus.reputationTooLow,
+      );
+      // Cliente con buena reputación: aplica.
+      final ok = PromoOffer.apply(
+          offers: [vip], code: 'VIP', amount: 100, reputation: 4.8, now: hoy);
+      expect(ok.status, CouponStatus.applied);
+      expect(ok.finalAmount, 80);
+    });
+
+    test('cupón desactivado no aplica', () {
+      expect(
+        PromoOffer.apply(
+                offers: [promo(enabled: false)],
+                code: 'VERANO20',
+                amount: 100,
+                now: hoy)
+            .status,
+        CouponStatus.disabled,
+      );
+    });
+
+    test('toJson/fromJson conservan los datos', () {
+      final json = promo(minReputation: 4.5).toJson();
+      final back = PromoOffer.fromJson(json);
+      expect(back.code, 'VERANO20');
+      expect(back.minReputation, 4.5);
+      expect(back.type, DiscountType.percent);
     });
   });
 }

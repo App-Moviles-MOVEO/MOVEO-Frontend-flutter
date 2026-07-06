@@ -10,6 +10,9 @@ class LocalStorageKeys {
   static const String locale = 'locale';
   static const String onboardingSeen = 'onboarding_seen';
   static const String kycDevBypass = 'kyc_dev_bypass';
+  static const String reputationThreshold = 'reputation_threshold';
+  static const String payoutMethods = 'payout_methods';
+  static const String promotions = 'promotions';
 
   static String checklist(String reservationId, String tipo) =>
       'checklist_${reservationId}_$tipo';
@@ -75,6 +78,39 @@ class LocalStorageService {
     if (raw == null) return {};
     return Map<String, String>.from(jsonDecode(raw) as Map);
   }
+
+  /// Umbral de reputación mínima para pasajeros (US30). 0 = sin umbral.
+  double get reputationThreshold =>
+      _prefs.getDouble(LocalStorageKeys.reputationThreshold) ?? 0;
+
+  Future<void> setReputationThreshold(double value) =>
+      _prefs.setDouble(LocalStorageKeys.reputationThreshold, value);
+
+  /// Métodos de cobro guardados (US21): lista de mapas
+  /// {alias, method, destination}.
+  List<Map<String, String>> loadPayoutMethods() {
+    final raw = _prefs.getString(LocalStorageKeys.payoutMethods);
+    if (raw == null) return [];
+    return (jsonDecode(raw) as List)
+        .map((e) => Map<String, String>.from(e as Map))
+        .toList();
+  }
+
+  Future<void> savePayoutMethods(List<Map<String, String>> methods) =>
+      _prefs.setString(LocalStorageKeys.payoutMethods, jsonEncode(methods));
+
+  /// Promociones/ofertas del proveedor (US34/US27/US29): lista de mapas JSON.
+  /// El backend aún no tiene endpoint de promociones; se persiste localmente.
+  List<Map<String, dynamic>> loadPromotions() {
+    final raw = _prefs.getString(LocalStorageKeys.promotions);
+    if (raw == null) return [];
+    return (jsonDecode(raw) as List)
+        .map((e) => Map<String, dynamic>.from(e as Map))
+        .toList();
+  }
+
+  Future<void> savePromotions(List<Map<String, dynamic>> promos) =>
+      _prefs.setString(LocalStorageKeys.promotions, jsonEncode(promos));
 }
 
 /// Se sobreescribe en main() con la instancia real de SharedPreferences.

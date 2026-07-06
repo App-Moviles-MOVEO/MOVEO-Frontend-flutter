@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wheelspe_provider/core/network/dio_client.dart';
+import 'package:wheelspe_provider/core/storage/local_storage.dart';
 import 'package:wheelspe_provider/features/routes/data/route_model.dart';
 import 'package:wheelspe_provider/features/routes/data/routes_remote_datasource.dart';
 import 'package:wheelspe_provider/features/routes/data/routes_repository_impl.dart';
@@ -20,6 +21,11 @@ final myRoutesProvider = FutureProvider<List<RouteModel>>((ref) async {
 
 final routeDetailProvider = FutureProvider.family<RouteModel, String>(
   (ref, id) => ref.watch(routesRepositoryProvider).getRoute(id),
+);
+
+/// Umbral de reputación mínima para pasajeros (US30). 0 = sin umbral.
+final reputationThresholdProvider = Provider<double>(
+  (ref) => ref.watch(localStorageProvider).reputationThreshold,
 );
 
 /// Acciones sobre rutas con invalidación de caches.

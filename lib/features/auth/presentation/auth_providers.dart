@@ -81,6 +81,14 @@ class AuthController extends Notifier<AsyncValue<void>> {
     state = const AsyncData(null);
   }
 
+  /// Baja voluntaria (US45): elimina la cuenta y cierra la sesión.
+  Future<void> deleteAccount() async {
+    await ref.read(authRepositoryProvider).deleteAccount();
+    ref.invalidate(currentUserIdProvider);
+    ref.invalidate(currentUserProvider);
+    state = const AsyncData(null);
+  }
+
   /// Refresca la sesión cacheada y el KYC tras autenticarse.
   void _refreshSession() {
     ref.read(sessionNotifierProvider).reset();

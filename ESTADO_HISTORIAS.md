@@ -34,25 +34,25 @@ Leyenda: ✅ Hecho · ⚠️ Parcial (UI hecha, sin backend real o acción incom
 |----|----------|-----------------|--------|-------------------|------|
 | US32 | Liquidar cuota de carpooling digitalmente | Owner | — | ✅ | Wallet real (`GET /wallet/{id}`) + retiros (`POST /withdrawals` con método y destino) |
 | US23 | Pagar cuota de asiento compartido de forma digital | Renter | ⚠️ | — | El book ya crea solicitud PENDING con `passengerId` (modelo correcto de aforo); el cobro de la cuota al confirmarse sigue pendiente |
-| US08 | Activar alerta de emergencia durante viaje | Renter | ⚠️ | — | Botón SOS existe pero sin acción (`onClick` vacío) |
+| US08 | Activar alerta de emergencia durante viaje | Ambas | ⚠️ | ✅ | Owner: botón SOS en ruta en curso (`RouteDetailScreen`) → crea ticket de emergencia de alta prioridad en `/support-tickets` con ubicación aproximada. Renter: botón sin acción todavía |
 | US12 | Registrar checklist fotográfico del vehículo | Owner | — | ✅ | `ChecklistScreen` PRE/POST sube las fotos a `POST /rentals/{id}/inspections` (multipart) con copia local de respaldo |
-| US21 | Vincular métodos de pago electrónicos | Renter | ⚠️ | — | `PaymentMethodsScreen` existe pero la lista es mock |
-| US09 | Validar inicio de viaje con código PIN | Ambas | ❌ | ❌ | Sin rastro de PIN en ninguna de las dos |
+| US21 | Vincular métodos de pago electrónicos | Ambas | ⚠️ | ✅ | Owner: `PayoutMethodsScreen` guarda métodos de cobro (Yape/Plin/banco) reutilizables en el retiro. Renter: lista de pago aún mock |
+| US09 | Validar inicio de viaje con código PIN | Ambas | ❌ | ✅ | Owner pide el PIN de 4 dígitos al registrar la entrega (`ReservationDetailScreen`); `TripPin` lo deriva del id del alquiler (misma fórmula en ambas apps). Pendiente: mostrarlo en la app Renter |
 | US11 | Filtrar rutas por preferencia de género | Ambas | ✅ | ✅ | Owner publica rutas "Solo mujeres"; Renter tiene el filtro en la búsqueda, género en el registro y validación al reservar (bloqueo/confirmación). Pendiente backend: campo género en User para validar server-side |
 | US16 | Aprobar solicitudes de pasajeros y controlar aforo | Owner | — | ✅ | `PassengersScreen`: aceptar/rechazar solicitudes vía `/adventure-routes/{id}/passengers/{pid}/accept|reject`, quitar confirmados |
 | US51 | Retirar temporalmente vehículo del catálogo público | Owner | — | ✅ | `VehicleDetailScreen._toggleStatus`: marca disponible / no disponible vía API |
-| US30 | Configurar umbrales de reputación mínimos | Owner | — | ❌ | |
+| US30 | Configurar umbrales de reputación mínimos | Owner | — | ✅ | `ReputationThresholdScreen` (perfil): slider 0–5. Al aceptar un pasajero por debajo del umbral, `PassengerTile` pide confirmación manual (US16 + US30) |
 | US10 | Gestionar contactos de confianza | Renter | ⚠️ | — | UI en `SafetyScreen` pero solo local, sin backend |
 | US17 | Automatizar rutas recurrentes semanales | Owner | — | ❌ | `AddRouteScreen` crea rutas puntuales, sin recurrencia |
-| US27 | Aplicar cupones y beneficios promocionales | Renter | ❌ | ❌ | |
-| US29 | Recompensar usuarios con alta reputación | Renter | ⚠️ | — | `RewardsScreen` es UI estática sin backend |
-| US34 | Gestionar ofertas promocionales temporales | Owner | — | ❌ | |
+| US27 | Aplicar cupones y beneficios promocionales | Ambas | ❌ | ✅ | Owner: `ApplyCouponScreen` valida un cupón (código, vigencia, reputación) y calcula el descuento con el motor puro `PromoOffer.apply` — la misma lógica que usaría el Renter al pagar. Pendiente backend: endpoint de promociones |
+| US29 | Recompensar usuarios con alta reputación | Ambas | ⚠️ | ✅ | Owner: las promociones admiten `minReputation` — un cupón con reputación mínima > 0 es una recompensa que solo aplica a clientes de alta reputación (`PromoForm` + motor lo valida). Renter: `RewardsScreen` sigue estática |
+| US34 | Gestionar ofertas promocionales temporales | Owner | — | ✅ | `PromotionsScreen` (perfil): crear cupones con % o monto fijo, vigencia (inicio/fin), activar/desactivar y eliminar. Estado calculado (vigente/programada/expirada). Persistencia local; pendiente endpoint de backend |
 | US36 | Reconocer comportamiento positivo con distintivos | Ambas | ✅ | ✅ | El backend otorga badges server-side (`stats.badges`: VERIFIED, PUNCTUAL, TOP_RENTER, FIVE_STARS) y ambas apps los muestran, con cálculo local de respaldo |
 | US38 | Filtrar solicitudes por umbral de confianza | Owner | — | ❌ | En `PassengersScreen` se ve el rating del pasajero pero no hay filtro por umbral |
 | US07 | Rastrear viaje activo para seguridad de pasajero | Renter | ⚠️ | — | Mismo `TripTrackingScreen` de US06 con datos demo |
 | US40 | Monitorear anomalías financieras (Admin) | Ninguna (admin) | — | — | No existe app/rol admin |
 | US41 | Mediar disputas de reputación (Admin) | Ninguna (admin) | — | — | No existe app/rol admin |
-| US45 | Solicitar baja voluntaria y eliminación de datos | Ambas | ❌ | ❌ | Sin opción de eliminar cuenta en ninguna |
+| US45 | Solicitar baja voluntaria y eliminación de datos | Ambas | ❌ | ✅ | Owner: `DeleteAccountScreen` (perfil) con confirmación escrita → `DELETE /users/{id}` inmediato (sin aprobación de admin) + cierre de sesión |
 | US46 | Enviar solicitud de alianza corporativa | Ambas | ❌ | ❌ | |
 | SP03 | Analizar opciones de KYC mediante IA | Backend | ❌ | ❌ | El KYC actual es subida manual de fotos |
 | SP04 | Investigar arquitectura de microservicios y contenedorización | Backend | ❌ | ❌ | No corresponde a los repos frontend |
@@ -63,6 +63,7 @@ Leyenda: ✅ Hecho · ⚠️ Parcial (UI hecha, sin backend real o acción incom
 - **Chat 1-a-1** con arrendatarios (`/messages`, `ConversationsScreen` + `ChatScreen`).
 - **Notificaciones** conectadas al backend (`/Notifications`, marcar leídas).
 - **Reporte de incidencias** (`ReportIncidentScreen` → `/support-tickets`).
+- **Cambiar contraseña** (`ChangePasswordScreen` → `POST /auth/change-password`) desde el perfil.
 - **Transacciones e ingresos** (`TransactionsScreen`, detalle, comisión de plataforma, filtros).
 
 ## Resumen de cambios respecto a la tabla anterior (verificada solo contra la app renter)

@@ -1765,6 +1765,456 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Calificación enviada'**
   String get ratingSent;
+
+  /// No description provided for @changePassword.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar contraseña'**
+  String get changePassword;
+
+  /// No description provided for @changePasswordSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingresa tu contraseña actual y elige una nueva'**
+  String get changePasswordSubtitle;
+
+  /// No description provided for @currentPassword.
+  ///
+  /// In es, this message translates to:
+  /// **'Contraseña actual'**
+  String get currentPassword;
+
+  /// No description provided for @newPassword.
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva contraseña'**
+  String get newPassword;
+
+  /// No description provided for @confirmNewPassword.
+  ///
+  /// In es, this message translates to:
+  /// **'Confirmar nueva contraseña'**
+  String get confirmNewPassword;
+
+  /// No description provided for @passwordChanged.
+  ///
+  /// In es, this message translates to:
+  /// **'Contraseña actualizada correctamente'**
+  String get passwordChanged;
+
+  /// No description provided for @emergency.
+  ///
+  /// In es, this message translates to:
+  /// **'Emergencia'**
+  String get emergency;
+
+  /// No description provided for @emergencyButton.
+  ///
+  /// In es, this message translates to:
+  /// **'SOS · Emergencia'**
+  String get emergencyButton;
+
+  /// No description provided for @emergencyTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Activar alerta de emergencia?'**
+  String get emergencyTitle;
+
+  /// No description provided for @emergencyMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Se enviará una alerta con tu ubicación al equipo de soporte y quedará registrada. Úsalo solo ante una situación real.'**
+  String get emergencyMessage;
+
+  /// No description provided for @emergencyConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'Enviar alerta'**
+  String get emergencyConfirm;
+
+  /// No description provided for @emergencySent.
+  ///
+  /// In es, this message translates to:
+  /// **'Alerta de emergencia enviada. El equipo de soporte fue notificado.'**
+  String get emergencySent;
+
+  /// No description provided for @emergencyDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'ALERTA DE EMERGENCIA activada por el conductor durante la ruta {route}.'**
+  String emergencyDescription(String route);
+
+  /// No description provided for @startPinTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Validar entrega con PIN'**
+  String get startPinTitle;
+
+  /// No description provided for @startPinSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Pide al arrendatario el PIN de 4 dígitos que ve en su app y escríbelo para confirmar la entrega.'**
+  String get startPinSubtitle;
+
+  /// No description provided for @pinLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'PIN de 4 dígitos'**
+  String get pinLabel;
+
+  /// No description provided for @invalidPin.
+  ///
+  /// In es, this message translates to:
+  /// **'PIN incorrecto. Verifícalo con el arrendatario.'**
+  String get invalidPin;
+
+  /// No description provided for @pinValidated.
+  ///
+  /// In es, this message translates to:
+  /// **'PIN validado. Entrega confirmada.'**
+  String get pinValidated;
+
+  /// No description provided for @tripPinShare.
+  ///
+  /// In es, this message translates to:
+  /// **'PIN de entrega: {pin}. Compártelo con el proveedor al recibir el vehículo.'**
+  String tripPinShare(String pin);
+
+  /// No description provided for @reputationThreshold.
+  ///
+  /// In es, this message translates to:
+  /// **'Umbral de reputación mínima'**
+  String get reputationThreshold;
+
+  /// No description provided for @reputationThresholdSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Solicitudes de pasajeros por debajo de este umbral requieren tu confirmación manual; por encima se pueden aceptar directo.'**
+  String get reputationThresholdSubtitle;
+
+  /// No description provided for @reputationThresholdValue.
+  ///
+  /// In es, this message translates to:
+  /// **'Reputación mínima: {value}'**
+  String reputationThresholdValue(String value);
+
+  /// No description provided for @reputationThresholdSaved.
+  ///
+  /// In es, this message translates to:
+  /// **'Umbral guardado'**
+  String get reputationThresholdSaved;
+
+  /// No description provided for @reputationThresholdOff.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin umbral (aceptar a cualquiera)'**
+  String get reputationThresholdOff;
+
+  /// No description provided for @lowReputationWarning.
+  ///
+  /// In es, this message translates to:
+  /// **'Este pasajero ({rating}) está por debajo de tu umbral ({threshold}). ¿Aceptar de todos modos?'**
+  String lowReputationWarning(String rating, String threshold);
+
+  /// No description provided for @acceptAnyway.
+  ///
+  /// In es, this message translates to:
+  /// **'Aceptar de todos modos'**
+  String get acceptAnyway;
+
+  /// No description provided for @settings.
+  ///
+  /// In es, this message translates to:
+  /// **'Configuración'**
+  String get settings;
+
+  /// No description provided for @deleteAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar mi cuenta'**
+  String get deleteAccount;
+
+  /// No description provided for @deleteAccountSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Baja voluntaria y eliminación de tus datos'**
+  String get deleteAccountSubtitle;
+
+  /// No description provided for @deleteAccountWarning.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta acción elimina tu cuenta y tus datos de forma permanente. No se puede deshacer. Escribe ELIMINAR para confirmar.'**
+  String get deleteAccountWarning;
+
+  /// No description provided for @deleteConfirmWord.
+  ///
+  /// In es, this message translates to:
+  /// **'ELIMINAR'**
+  String get deleteConfirmWord;
+
+  /// No description provided for @deleteAccountConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar definitivamente'**
+  String get deleteAccountConfirm;
+
+  /// No description provided for @deleteAccountTypeHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe ELIMINAR'**
+  String get deleteAccountTypeHint;
+
+  /// No description provided for @accountDeleted.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu cuenta fue eliminada'**
+  String get accountDeleted;
+
+  /// No description provided for @payoutMethods.
+  ///
+  /// In es, this message translates to:
+  /// **'Métodos de cobro'**
+  String get payoutMethods;
+
+  /// No description provided for @payoutMethodsSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Guarda tus cuentas para recibir tus retiros más rápido'**
+  String get payoutMethodsSubtitle;
+
+  /// No description provided for @addPayoutMethod.
+  ///
+  /// In es, this message translates to:
+  /// **'Agregar método de cobro'**
+  String get addPayoutMethod;
+
+  /// No description provided for @noPayoutMethods.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no has agregado métodos de cobro'**
+  String get noPayoutMethods;
+
+  /// No description provided for @payoutMethodSaved.
+  ///
+  /// In es, this message translates to:
+  /// **'Método de cobro guardado'**
+  String get payoutMethodSaved;
+
+  /// No description provided for @payoutAlias.
+  ///
+  /// In es, this message translates to:
+  /// **'Alias (ej. Mi Yape)'**
+  String get payoutAlias;
+
+  /// No description provided for @promotions.
+  ///
+  /// In es, this message translates to:
+  /// **'Promociones'**
+  String get promotions;
+
+  /// No description provided for @promotionsSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Crea cupones y ofertas temporales para tus alquileres y rutas'**
+  String get promotionsSubtitle;
+
+  /// No description provided for @noPromotions.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no has creado promociones'**
+  String get noPromotions;
+
+  /// No description provided for @addPromotion.
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva promoción'**
+  String get addPromotion;
+
+  /// No description provided for @editPromotion.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar promoción'**
+  String get editPromotion;
+
+  /// No description provided for @promoCode.
+  ///
+  /// In es, this message translates to:
+  /// **'Código del cupón'**
+  String get promoCode;
+
+  /// No description provided for @promoCodeHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Ej. VERANO20'**
+  String get promoCodeHint;
+
+  /// No description provided for @promoTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Título / descripción'**
+  String get promoTitle;
+
+  /// No description provided for @promoDiscountType.
+  ///
+  /// In es, this message translates to:
+  /// **'Tipo de descuento'**
+  String get promoDiscountType;
+
+  /// No description provided for @promoPercent.
+  ///
+  /// In es, this message translates to:
+  /// **'Porcentaje'**
+  String get promoPercent;
+
+  /// No description provided for @promoFixed.
+  ///
+  /// In es, this message translates to:
+  /// **'Monto fijo'**
+  String get promoFixed;
+
+  /// No description provided for @promoValue.
+  ///
+  /// In es, this message translates to:
+  /// **'Valor del descuento'**
+  String get promoValue;
+
+  /// No description provided for @promoStart.
+  ///
+  /// In es, this message translates to:
+  /// **'Inicio'**
+  String get promoStart;
+
+  /// No description provided for @promoEnd.
+  ///
+  /// In es, this message translates to:
+  /// **'Fin'**
+  String get promoEnd;
+
+  /// No description provided for @promoMinReputation.
+  ///
+  /// In es, this message translates to:
+  /// **'Reputación mínima (recompensa)'**
+  String get promoMinReputation;
+
+  /// No description provided for @promoMinReputationHint.
+  ///
+  /// In es, this message translates to:
+  /// **'0 = para todos · mayor = solo usuarios con buena reputación'**
+  String get promoMinReputationHint;
+
+  /// No description provided for @promoSaved.
+  ///
+  /// In es, this message translates to:
+  /// **'Promoción guardada'**
+  String get promoSaved;
+
+  /// No description provided for @promoDeleted.
+  ///
+  /// In es, this message translates to:
+  /// **'Promoción eliminada'**
+  String get promoDeleted;
+
+  /// No description provided for @promoActive.
+  ///
+  /// In es, this message translates to:
+  /// **'Vigente'**
+  String get promoActive;
+
+  /// No description provided for @promoScheduled.
+  ///
+  /// In es, this message translates to:
+  /// **'Programada'**
+  String get promoScheduled;
+
+  /// No description provided for @promoExpired.
+  ///
+  /// In es, this message translates to:
+  /// **'Expirada'**
+  String get promoExpired;
+
+  /// No description provided for @promoDisabled.
+  ///
+  /// In es, this message translates to:
+  /// **'Desactivada'**
+  String get promoDisabled;
+
+  /// No description provided for @promoValidity.
+  ///
+  /// In es, this message translates to:
+  /// **'{start} → {end}'**
+  String promoValidity(String start, String end);
+
+  /// No description provided for @promoRewardTag.
+  ///
+  /// In es, this message translates to:
+  /// **'Recompensa ≥ {value}★'**
+  String promoRewardTag(String value);
+
+  /// No description provided for @applyCoupon.
+  ///
+  /// In es, this message translates to:
+  /// **'Aplicar cupón'**
+  String get applyCoupon;
+
+  /// No description provided for @applyCouponSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Simula el descuento de un cupón sobre un monto (la misma lógica que verá el arrendatario).'**
+  String get applyCouponSubtitle;
+
+  /// No description provided for @couponAmount.
+  ///
+  /// In es, this message translates to:
+  /// **'Monto base (S/)'**
+  String get couponAmount;
+
+  /// No description provided for @couponReputationOptional.
+  ///
+  /// In es, this message translates to:
+  /// **'Reputación del cliente (opcional)'**
+  String get couponReputationOptional;
+
+  /// No description provided for @couponApply.
+  ///
+  /// In es, this message translates to:
+  /// **'Aplicar'**
+  String get couponApply;
+
+  /// No description provided for @couponApplied.
+  ///
+  /// In es, this message translates to:
+  /// **'Cupón aplicado: -{discount} → total {total}'**
+  String couponApplied(String discount, String total);
+
+  /// No description provided for @couponNotFound.
+  ///
+  /// In es, this message translates to:
+  /// **'No existe un cupón con ese código'**
+  String get couponNotFound;
+
+  /// No description provided for @couponNotStarted.
+  ///
+  /// In es, this message translates to:
+  /// **'El cupón aún no está vigente'**
+  String get couponNotStarted;
+
+  /// No description provided for @couponExpired.
+  ///
+  /// In es, this message translates to:
+  /// **'El cupón ya expiró'**
+  String get couponExpired;
+
+  /// No description provided for @couponDisabled.
+  ///
+  /// In es, this message translates to:
+  /// **'El cupón está desactivado'**
+  String get couponDisabled;
+
+  /// No description provided for @couponReputationTooLow.
+  ///
+  /// In es, this message translates to:
+  /// **'El cliente no alcanza la reputación mínima del cupón'**
+  String get couponReputationTooLow;
 }
 
 class _AppLocalizationsDelegate
