@@ -27,6 +27,7 @@ import 'package:wheelspe_provider/features/profile/presentation/change_password_
 import 'package:wheelspe_provider/features/profile/presentation/delete_account_screen.dart';
 import 'package:wheelspe_provider/features/profile/presentation/edit_profile_screen.dart';
 import 'package:wheelspe_provider/features/profile/presentation/kyc_status_screen.dart';
+import 'package:wheelspe_provider/features/profile/presentation/settings_screen.dart';
 import 'package:wheelspe_provider/features/profile/presentation/payout_methods_screen.dart';
 import 'package:wheelspe_provider/features/profile/presentation/profile_screen.dart';
 import 'package:wheelspe_provider/features/profile/presentation/reputation_threshold_screen.dart';
@@ -249,6 +250,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/profile/badges',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const BadgesScreen(),
+      ),
+      GoRoute(
+        path: '/profile/settings',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const SettingsScreen(),
       ),
       GoRoute(
         path: '/profile/change-password',

@@ -185,6 +185,26 @@ class _EditProfileFormState extends ConsumerState<_EditProfileForm> {
             loading: _saving,
             onPressed: _save,
           ),
+          const SizedBox(height: 12),
+          const Divider(),
+          const SizedBox(height: 4),
+          Semantics(
+            label: l10n.changePassword,
+            button: true,
+            child: ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(
+                Icons.lock_outline,
+                color: AppColors.textSecondary,
+              ),
+              title: Text(l10n.changePassword, style: AppTextStyles.body),
+              trailing: const Icon(
+                Icons.chevron_right,
+                color: AppColors.textSecondary,
+              ),
+              onTap: () => context.push('/profile/change-password'),
+            ),
+          ),
         ],
       ),
     );

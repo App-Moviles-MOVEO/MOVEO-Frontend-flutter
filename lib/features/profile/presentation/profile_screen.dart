@@ -11,7 +11,6 @@ import 'package:wheelspe_provider/features/profile/data/profile_remote_datasourc
 import 'package:wheelspe_provider/features/profile/presentation/profile_providers.dart';
 import 'package:wheelspe_provider/features/transactions/presentation/transactions_providers.dart';
 import 'package:wheelspe_provider/l10n/generated/app_localizations.dart';
-import 'package:wheelspe_provider/shared/providers/locale_provider.dart';
 import 'package:wheelspe_provider/shared/providers/user_provider.dart';
 import 'package:wheelspe_provider/shared/widgets/avatar_widget.dart';
 import 'package:wheelspe_provider/shared/widgets/badge_widget.dart';
@@ -55,7 +54,6 @@ class _ProfileBody extends ConsumerWidget {
         ProviderBadges.fromUser(user);
     final summary = ref.watch(walletSummaryProvider).value;
     final reviews = ref.watch(myReviewsProvider).value ?? const [];
-    final locale = ref.watch(localeProvider);
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -326,20 +324,9 @@ class _ProfileBody extends ConsumerWidget {
                   onTap: () => context.push('/profile/badges'),
                 ),
                 _MenuTile(
-                  icon: Icons.lock_outline,
-                  label: l10n.changePassword,
-                  onTap: () => context.push('/profile/change-password'),
-                ),
-                _MenuTile(
-                  icon: Icons.account_balance_wallet_outlined,
-                  label: l10n.payoutMethods,
-                  onTap: () => context.push('/profile/payout-methods'),
-                ),
-                _MenuTile(
-                  icon: Icons.tune,
-                  label: l10n.reputationThreshold,
-                  onTap: () =>
-                      context.push('/profile/reputation-threshold'),
+                  icon: Icons.settings_outlined,
+                  label: l10n.settings,
+                  onTap: () => context.push('/profile/settings'),
                 ),
                 _MenuTile(
                   icon: Icons.gavel_outlined,
@@ -355,54 +342,6 @@ class _ProfileBody extends ConsumerWidget {
                   icon: Icons.handshake_outlined,
                   label: l10n.allianceTitle,
                   onTap: () => context.push('/profile/alliance'),
-                ),
-                ListTile(
-                  leading: const Icon(
-                    Icons.language,
-                    color: AppColors.textSecondary,
-                  ),
-                  title: Text(l10n.language, style: AppTextStyles.body),
-                  trailing: Semantics(
-                    label: l10n.language,
-                    child: SegmentedButton<String>(
-                      segments: [
-                        ButtonSegment(
-                          value: 'es',
-                          label: Text(
-                            'ES',
-                            style: AppTextStyles.caption.copyWith(
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                        ),
-                        ButtonSegment(
-                          value: 'en',
-                          label: Text(
-                            'EN',
-                            style: AppTextStyles.caption.copyWith(
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                        ),
-                      ],
-                      selected: {locale.languageCode},
-                      showSelectedIcon: false,
-                      onSelectionChanged: (selection) => ref
-                          .read(localeProvider.notifier)
-                          .setLocale(selection.first),
-                    ),
-                  ),
-                ),
-                _MenuTile(
-                  icon: Icons.description_outlined,
-                  label: l10n.termsAndConditions,
-                  onTap: () {},
-                ),
-                _MenuTile(
-                  icon: Icons.no_accounts_outlined,
-                  label: l10n.deleteAccount,
-                  color: AppColors.error,
-                  onTap: () => context.push('/profile/delete-account'),
                 ),
                 _MenuTile(
                   icon: Icons.logout,
