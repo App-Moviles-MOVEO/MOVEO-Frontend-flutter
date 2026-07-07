@@ -6,6 +6,7 @@ import 'package:wheelspe_provider/core/constants/app_colors.dart';
 import 'package:wheelspe_provider/core/constants/app_text_styles.dart';
 import 'package:wheelspe_provider/core/utils/validators.dart';
 import 'package:wheelspe_provider/features/auth/presentation/auth_providers.dart';
+import 'package:wheelspe_provider/features/legal/presentation/terms_screen.dart';
 import 'package:wheelspe_provider/l10n/generated/app_localizations.dart';
 import 'package:wheelspe_provider/shared/widgets/snackbars.dart';
 import 'package:wheelspe_provider/shared/widgets/wheelspe_button.dart';
@@ -73,38 +74,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     }
   }
 
-  void _openTerms() {
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) => DraggableScrollableSheet(
-        expand: false,
-        initialChildSize: 0.8,
-        builder: (context, scrollController) => SingleChildScrollView(
-          controller: scrollController,
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                AppLocalizations.of(context).termsAndConditions,
-                style: AppTextStyles.headline,
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Al registrarte como proveedor de WheelsPe aceptas operar '
-                'con vehículos de tu propiedad, mantener la información de '
-                'tus publicaciones actualizada y cumplir las normas de '
-                'convivencia de la comunidad. WheelsPe retiene una comisión '
-                'por cada transacción procesada en la plataforma.',
-                style: AppTextStyles.bodySecondary,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  void _openTerms() => showTermsSheet(context);
 
   @override
   Widget build(BuildContext context) {

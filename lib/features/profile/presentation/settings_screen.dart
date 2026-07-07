@@ -83,7 +83,7 @@ class SettingsScreen extends ConsumerWidget {
                 _SettingsTile(
                   icon: Icons.description_outlined,
                   label: l10n.termsAndConditions,
-                  onTap: () {},
+                  onTap: () => context.push('/legal/terms'),
                 ),
                 _SettingsTile(
                   icon: Icons.no_accounts_outlined,
