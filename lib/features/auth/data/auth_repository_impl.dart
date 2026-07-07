@@ -22,12 +22,14 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
     required String fullName,
     required String phone,
+    required String gender,
   }) async {
     final result = await _remote.register(
       email: email,
       password: password,
       fullName: fullName,
       phone: phone,
+      gender: gender,
     );
     // Si el backend no devolvió id en el registro, autenticamos para obtenerlo.
     if (result.userId.isEmpty) {

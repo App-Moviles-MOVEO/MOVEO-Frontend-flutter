@@ -20,6 +20,9 @@ class LocalStorageKeys {
       'checklist_${reservationId}_$tipo';
 
   static String vehicleDocs(String vehicleId) => 'vehicle_docs_$vehicleId';
+
+  static String vehiclePhotos(String vehicleId) =>
+      'vehicle_photos_$vehicleId';
 }
 
 /// Wrapper sobre shared_preferences para preferencias de usuario
@@ -79,6 +82,21 @@ class LocalStorageService {
     final raw = _prefs.getString(LocalStorageKeys.vehicleDocs(vehicleId));
     if (raw == null) return {};
     return Map<String, String>.from(jsonDecode(raw) as Map);
+  }
+
+  /// Fotos del vehículo como rutas de archivo local. El backend aún no
+  /// persiste/devuelve las imágenes, así que esta copia permite al proveedor
+  /// ver las fotos que subió al publicar el vehículo.
+  Future<void> saveVehiclePhotos(String vehicleId, List<String> photos) =>
+      _prefs.setString(
+        LocalStorageKeys.vehiclePhotos(vehicleId),
+        jsonEncode(photos),
+      );
+
+  List<String> loadVehiclePhotos(String vehicleId) {
+    final raw = _prefs.getString(LocalStorageKeys.vehiclePhotos(vehicleId));
+    if (raw == null) return const [];
+    return (jsonDecode(raw) as List).cast<String>();
   }
 
   /// Umbral de reputación mínima para pasajeros (US30). 0 = sin umbral.

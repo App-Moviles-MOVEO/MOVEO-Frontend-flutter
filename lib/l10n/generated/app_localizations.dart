@@ -296,6 +296,48 @@ abstract class AppLocalizations {
   /// **'Acepto los Términos y Condiciones'**
   String get acceptTerms;
 
+  /// No description provided for @genderLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Género'**
+  String get genderLabel;
+
+  /// No description provided for @genderMale.
+  ///
+  /// In es, this message translates to:
+  /// **'Hombre'**
+  String get genderMale;
+
+  /// No description provided for @genderFemale.
+  ///
+  /// In es, this message translates to:
+  /// **'Mujer'**
+  String get genderFemale;
+
+  /// No description provided for @genderRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'Selecciona tu género'**
+  String get genderRequired;
+
+  /// No description provided for @carpoolCommunityInstitutional.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu correo es institucional (UPC): esta ruta solo la verán usuarios con correo @upc.edu.pe.'**
+  String get carpoolCommunityInstitutional;
+
+  /// No description provided for @carpoolCommunityGeneral.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta ruta la verán los usuarios con correo general (no institucional).'**
+  String get carpoolCommunityGeneral;
+
+  /// No description provided for @noEarnings7Days.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no tienes ingresos en los últimos 7 días'**
+  String get noEarnings7Days;
+
   /// No description provided for @registerButton.
   ///
   /// In es, this message translates to:

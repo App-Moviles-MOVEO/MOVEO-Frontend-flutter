@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -79,6 +81,7 @@ class _VehicleDetailBodyState extends ConsumerState<_VehicleDetailBody> {
   bool _changingStatus = false;
   final _picker = ImagePicker();
   late Map<String, String> _docs;
+  late List<String> _photos;
 
   VehicleModel get vehicle => widget.vehicle;
 
@@ -91,6 +94,11 @@ class _VehicleDetailBodyState extends ConsumerState<_VehicleDetailBody> {
       ...widget.vehicle.documents,
       ...ref.read(localStorageProvider).loadVehicleDocs(widget.vehicle.id),
     };
+    // Fotos: las que devuelva el backend; si no hay, la copia local que se
+    // guardó al publicar (el backend aún no persiste/devuelve las imágenes).
+    _photos = widget.vehicle.photos.isNotEmpty
+        ? widget.vehicle.photos
+        : ref.read(localStorageProvider).loadVehiclePhotos(widget.vehicle.id);
   }
 
   Future<void> _pickDoc(String key) async {
@@ -181,7 +189,7 @@ class _VehicleDetailBodyState extends ConsumerState<_VehicleDetailBody> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _PhotoCarousel(vehicle: vehicle),
+          _PhotoCarousel(vehicleId: vehicle.id, photos: _photos),
           const SizedBox(height: 16),
           Row(
             children: [
@@ -355,13 +363,17 @@ class _VehicleDetailBodyState extends ConsumerState<_VehicleDetailBody> {
 }
 
 class _PhotoCarousel extends StatelessWidget {
-  final VehicleModel vehicle;
+  final String vehicleId;
+  final List<String> photos;
 
-  const _PhotoCarousel({required this.vehicle});
+  const _PhotoCarousel({required this.vehicleId, required this.photos});
+
+  static bool _isRemote(String path) =>
+      path.startsWith('http://') || path.startsWith('https://');
 
   @override
   Widget build(BuildContext context) {
-    if (vehicle.photos.isEmpty) {
+    if (photos.isEmpty) {
       return Container(
         height: 220,
         decoration: BoxDecoration(
@@ -381,30 +393,45 @@ class _PhotoCarousel extends StatelessWidget {
       height: 220,
       child: PageView.builder(
         physics: const BouncingScrollPhysics(),
-        itemCount: vehicle.photos.length,
+        itemCount: photos.length,
         itemBuilder: (context, i) => Padding(
           padding: EdgeInsets.only(
-            right: i < vehicle.photos.length - 1 ? 8 : 0,
+            right: i < photos.length - 1 ? 8 : 0,
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(16),
             child: Hero(
-              tag: i == 0 ? 'vehicle-${vehicle.id}' : 'photo-${vehicle.id}-$i',
-              child: CachedNetworkImage(
-                imageUrl: vehicle.photos[i],
-                fit: BoxFit.cover,
-                placeholder: (_, _) => const ShimmerCard(height: 220),
-                errorWidget: (_, _, _) => Container(
-                  color: AppColors.surfaceElevated,
-                  child: const Icon(
-                    Icons.broken_image_outlined,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ),
+              tag: i == 0 ? 'vehicle-$vehicleId' : 'photo-$vehicleId-$i',
+              child: _isRemote(photos[i])
+                  ? CachedNetworkImage(
+                      imageUrl: photos[i],
+                      fit: BoxFit.cover,
+                      placeholder: (_, _) => const ShimmerCard(height: 220),
+                      errorWidget: (_, _, _) => const _BrokenPhoto(),
+                    )
+                  : Image.file(
+                      File(photos[i]),
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => const _BrokenPhoto(),
+                    ),
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _BrokenPhoto extends StatelessWidget {
+  const _BrokenPhoto();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: AppColors.surfaceElevated,
+      child: const Icon(
+        Icons.broken_image_outlined,
+        color: AppColors.textSecondary,
       ),
     );
   }

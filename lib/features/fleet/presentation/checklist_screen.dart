@@ -13,22 +13,13 @@ import 'package:wheelspe_provider/shared/providers/user_provider.dart';
 import 'package:wheelspe_provider/shared/widgets/snackbars.dart';
 import 'package:wheelspe_provider/shared/widgets/wheelspe_button.dart';
 
-/// Puntos de inspección del vehículo. Las claves son estables para
-/// persistir en shared_preferences.
+/// Punto de inspección del vehículo. Una sola foto general es suficiente.
+/// La clave es estable para persistir en shared_preferences.
 const _inspectionPoints = [
   'front',
-  'rightSide',
-  'leftSide',
-  'rear',
-  'driverInterior',
-  'passengerInterior',
-  'dashboard',
-  'trunk',
-  'tires',
-  'roof',
 ];
 
-const _minRequired = 8;
+const _minRequired = 1;
 
 /// Checklist fotográfico pre/post alquiler.
 /// [tipo] es "PRE" o "POST".

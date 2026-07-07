@@ -172,6 +172,14 @@ class _AddVehicleScreenState extends ConsumerState<AddVehicleScreen> {
             .read(localStorageProvider)
             .saveVehicleDocs(created.id, vehicle.documents);
       }
+      // El backend tampoco devuelve las imágenes; guardamos una copia local
+      // para que el proveedor vea las fotos que subió en el detalle.
+      if (created.id.isNotEmpty && _photos.isNotEmpty) {
+        await ref.read(localStorageProvider).saveVehiclePhotos(
+              created.id,
+              _photos.map((f) => f.path).toList(),
+            );
+      }
       if (!mounted) return;
       await _showSuccessAndExit();
     } catch (e) {

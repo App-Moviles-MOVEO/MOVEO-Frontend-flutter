@@ -26,6 +26,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
   bool _acceptedTerms = false;
+  // Género declarado: 'male' | 'female'. Lo consume la app Renter (US11).
+  String? _gender;
 
   @override
   void dispose() {
@@ -40,6 +42,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   Future<void> _submit() async {
     final l10n = AppLocalizations.of(context);
     if (!_formKey.currentState!.validate()) return;
+    if (_gender == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.genderRequired)),
+      );
+      return;
+    }
     if (!_acceptedTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.mustAcceptTerms)),
@@ -53,6 +61,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           password: _passwordController.text,
           fullName: _nameController.text,
           phone: '+51${_phoneController.text.trim()}',
+          gender: _gender!,
         );
     if (!mounted) return;
 
@@ -168,6 +177,31 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   validator: (v) => v == _passwordController.text
                       ? null
                       : l10n.passwordsDontMatch,
+                ),
+                const SizedBox(height: 24),
+                Text(l10n.genderLabel, style: AppTextStyles.bodySecondary),
+                const SizedBox(height: 10),
+                Semantics(
+                  label: l10n.genderLabel,
+                  child: SegmentedButton<String>(
+                    segments: [
+                      ButtonSegment(
+                        value: 'male',
+                        label: Text(l10n.genderMale),
+                        icon: const Icon(Icons.male),
+                      ),
+                      ButtonSegment(
+                        value: 'female',
+                        label: Text(l10n.genderFemale),
+                        icon: const Icon(Icons.female),
+                      ),
+                    ],
+                    selected: _gender == null ? const {} : {_gender!},
+                    emptySelectionAllowed: true,
+                    showSelectedIcon: false,
+                    onSelectionChanged: (s) =>
+                        setState(() => _gender = s.isEmpty ? null : s.first),
+                  ),
                 ),
                 const SizedBox(height: 24),
                 Semantics(

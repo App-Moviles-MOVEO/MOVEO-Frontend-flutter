@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:wheelspe_provider/core/constants/app_colors.dart';
 import 'package:wheelspe_provider/core/constants/app_text_styles.dart';
 import 'package:wheelspe_provider/core/utils/date_formatter.dart';
+import 'package:wheelspe_provider/features/chat/presentation/chat_providers.dart';
+import 'package:wheelspe_provider/features/fleet/presentation/fleet_providers.dart';
 import 'package:wheelspe_provider/features/notifications/data/notification_model.dart';
 import 'package:wheelspe_provider/features/notifications/presentation/notifications_providers.dart';
 import 'package:wheelspe_provider/shared/widgets/empty_state.dart';
@@ -16,7 +19,7 @@ class NotificationsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final async = ref.watch(notificationsProvider);
+    final async = ref.watch(notificationsFeedProvider);
     final locale = Localizations.localeOf(context).languageCode;
 
     return Scaffold(
@@ -36,7 +39,11 @@ class NotificationsScreen extends ConsumerWidget {
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: () async => ref.invalidate(notificationsProvider),
+        onRefresh: () async {
+          ref.invalidate(notificationsProvider);
+          ref.invalidate(ownerReservationsProvider);
+          ref.invalidate(conversationsProvider);
+        },
         child: async.when(
           loading: () => ListView(
             padding: const EdgeInsets.all(16),
@@ -46,8 +53,9 @@ class NotificationsScreen extends ConsumerWidget {
               ShimmerCard(height: 80),
             ],
           ),
-          error: (e, _) =>
-              ErrorState(onRetry: () => ref.invalidate(notificationsProvider)),
+          error: (e, _) => ErrorState(
+            onRetry: () => ref.invalidate(notificationsFeedProvider),
+          ),
           data: (items) {
             if (items.isEmpty) {
               return ListView(
@@ -84,8 +92,31 @@ class _NotificationTile extends ConsumerWidget {
 
   const _NotificationTile({required this.item, required this.locale});
 
+  /// Las notificaciones sintéticas (reservas/mensajes) no existen en el
+  /// backend: no se marcan leídas ni se borran; al tocarlas se navega al
+  /// origen del aviso.
+  bool get _isSynthetic => item.id.startsWith('synthetic:');
+
+  void _onTapSynthetic(BuildContext context) {
+    final parts = item.id.split(':'); // synthetic:<tipo>:<id>
+    if (parts.length < 3) return;
+    final targetId = parts.sublist(2).join(':');
+    switch (parts[1]) {
+      case 'reservation':
+        context.push('/reservations/$targetId');
+      case 'chat':
+        context.push('/chat/$targetId');
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (_isSynthetic) {
+      return WheelsPeCard(
+        onTap: () => _onTapSynthetic(context),
+        child: _content(),
+      );
+    }
     return Dismissible(
       key: ValueKey(item.id),
       direction: DismissDirection.endToStart,
@@ -104,7 +135,13 @@ class _NotificationTile extends ConsumerWidget {
         onTap: item.read
             ? null
             : () => ref.read(notificationActionsProvider).markRead(item.id),
-        child: Row(
+        child: _content(),
+      ),
+    );
+  }
+
+  Widget _content() {
+    return Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
@@ -142,8 +179,6 @@ class _NotificationTile extends ConsumerWidget {
               ),
             ),
           ],
-        ),
-      ),
     );
   }
 }

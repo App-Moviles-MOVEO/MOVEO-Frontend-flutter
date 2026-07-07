@@ -31,7 +31,6 @@ class _AddRouteScreenState extends ConsumerState<AddRouteScreen> {
   DateTime _date = DateTime.now();
   TimeOfDay _time = const TimeOfDay(hour: 7, minute: 0);
   int _seats = 3;
-  bool _upcOnly = false;
   bool _womenOnly = false;
   bool _publishing = false;
 
@@ -82,17 +81,12 @@ class _AddRouteScreenState extends ConsumerState<AddRouteScreen> {
       showInfoSnackBar(context, AppLocalizations.of(context).pickAtLeastOneDay);
       return;
     }
-    // El carpooling exige correo institucional (comunidad verificada).
+    // El carpooling ya no exige correo institucional: la comunidad se deriva
+    // del dominio del correo con el que se registró el usuario. Correo
+    // institucional (@upc.edu.pe) → ruta UPC (solo la ve su misma comunidad);
+    // correo normal (.com) → ruta general que ven los demás usuarios normales.
     final user = await ref.read(currentUserProvider.future);
-    if (!Validators.isInstitutionalEmail(user.email)) {
-      if (mounted) {
-        showInfoSnackBar(
-          context,
-          AppLocalizations.of(context).institutionalEmailRequired,
-        );
-      }
-      return;
-    }
+    final institutional = Validators.isInstitutionalEmail(user.email);
     setState(() => _publishing = true);
     try {
       final ownerId = await ref.read(currentUserIdProvider.future);
@@ -117,7 +111,7 @@ class _AddRouteScreenState extends ConsumerState<AddRouteScreen> {
           pricePerSeat: price,
           weekdays: _weekdays,
           weeks: _weeks,
-          institutionalFilter: _upcOnly,
+          institutionalFilter: institutional,
           womenOnly: _womenOnly,
           notes: _notesController.text.trim(),
         );
@@ -139,7 +133,7 @@ class _AddRouteScreenState extends ConsumerState<AddRouteScreen> {
         departureTime: departureTime,
         availableSeats: _seats,
         pricePerSeat: price,
-        institutionalFilter: _upcOnly,
+        institutionalFilter: institutional,
         womenOnly: _womenOnly,
         notes: _notesController.text.trim(),
       );
@@ -163,8 +157,8 @@ class _AddRouteScreenState extends ConsumerState<AddRouteScreen> {
     final l10n = AppLocalizations.of(context);
     final locale = Localizations.localeOf(context).languageCode;
     final user = ref.watch(currentUserProvider).valueOrNull;
-    final missingInstitutionalEmail =
-        user != null && !Validators.isInstitutionalEmail(user.email);
+    final institutional =
+        user != null && Validators.isInstitutionalEmail(user.email);
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.addRouteTitle)),
@@ -176,16 +170,22 @@ class _AddRouteScreenState extends ConsumerState<AddRouteScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (missingInstitutionalEmail) ...[
+              if (user != null) ...[
                 WheelsPeCard(
                   child: Row(
                     children: [
-                      const Icon(Icons.school_outlined,
-                          color: AppColors.warning),
+                      Icon(
+                        institutional
+                            ? Icons.school_outlined
+                            : Icons.public,
+                        color: AppColors.accent,
+                      ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          l10n.institutionalEmailRequired,
+                          institutional
+                              ? l10n.carpoolCommunityInstitutional
+                              : l10n.carpoolCommunityGeneral,
                           style: AppTextStyles.bodySecondary,
                         ),
                       ),
@@ -282,14 +282,6 @@ class _AddRouteScreenState extends ConsumerState<AddRouteScreen> {
                     : l10n.requiredField,
               ),
               const SizedBox(height: 16),
-              SwitchListTile(
-                value: _upcOnly,
-                onChanged: (v) => setState(() => _upcOnly = v),
-                title: Text(l10n.upcOnly, style: AppTextStyles.body),
-                secondary:
-                    const Icon(Icons.school_outlined, color: AppColors.accent),
-                contentPadding: EdgeInsets.zero,
-              ),
               SwitchListTile(
                 value: _womenOnly,
                 onChanged: (v) => setState(() => _womenOnly = v),

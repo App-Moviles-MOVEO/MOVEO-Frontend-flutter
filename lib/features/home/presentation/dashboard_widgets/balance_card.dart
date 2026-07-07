@@ -50,7 +50,19 @@ class BalanceCard extends StatelessWidget {
           const SizedBox(height: 18),
           Text(l10n.last7Days, style: AppTextStyles.caption),
           const SizedBox(height: 10),
-          SizedBox(
+          if (maxDay <= 0)
+            SizedBox(
+              height: 90,
+              child: Center(
+                child: Text(
+                  l10n.noEarnings7Days,
+                  style: AppTextStyles.bodySecondary,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            )
+          else
+            SizedBox(
             height: 90,
             child: BarChart(
               BarChartData(

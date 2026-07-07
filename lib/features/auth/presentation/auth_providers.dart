@@ -56,6 +56,7 @@ class AuthController extends Notifier<AsyncValue<void>> {
     required String password,
     required String fullName,
     required String phone,
+    required String gender,
   }) async {
     state = const AsyncLoading();
     try {
@@ -64,6 +65,7 @@ class AuthController extends Notifier<AsyncValue<void>> {
         password: password,
         fullName: fullName,
         phone: phone,
+        gender: gender,
       );
       _refreshSession();
       state = const AsyncData(null);

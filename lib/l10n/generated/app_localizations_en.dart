@@ -115,6 +115,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get acceptTerms => 'I accept the Terms and Conditions';
 
   @override
+  String get genderLabel => 'Gender';
+
+  @override
+  String get genderMale => 'Male';
+
+  @override
+  String get genderFemale => 'Female';
+
+  @override
+  String get genderRequired => 'Select your gender';
+
+  @override
+  String get carpoolCommunityInstitutional =>
+      'Your email is institutional (UPC): only users with an @upc.edu.pe email will see this route.';
+
+  @override
+  String get carpoolCommunityGeneral =>
+      'This route will be visible to users with a general (non-institutional) email.';
+
+  @override
+  String get noEarnings7Days => 'No earnings in the last 7 days yet';
+
+  @override
   String get registerButton => 'Sign up';
 
   @override

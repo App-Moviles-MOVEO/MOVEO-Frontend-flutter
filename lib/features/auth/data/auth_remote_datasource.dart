@@ -30,6 +30,7 @@ class AuthRemoteDataSource {
     required String password,
     required String fullName,
     required String phone,
+    required String gender,
   }) async {
     final parts = fullName.trim().split(RegExp(r'\s+'));
     final firstName = parts.isNotEmpty ? parts.first : fullName.trim();
@@ -47,6 +48,9 @@ class AuthRemoteDataSource {
           'password': password,
           'phone': phone,
           'role': 'owner',
+          // Género declarado (US11): lo consume la app Renter para las
+          // rutas de carpool exclusivas para mujeres.
+          'gender': gender,
         },
       );
       return LoginResult.fromJson(response.data ?? {});

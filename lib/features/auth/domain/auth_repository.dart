@@ -13,6 +13,7 @@ abstract class AuthRepository {
     required String password,
     required String fullName,
     required String phone,
+    required String gender,
   });
 
   /// KYC real: sube los documentos (multipart) del usuario autenticado.
