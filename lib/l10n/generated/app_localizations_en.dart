@@ -975,6 +975,23 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get tripPinAsk =>
+      'Ask the renter for the handover PIN shown in their app to validate the delivery.';
+
+  @override
+  String get vehicleForRoute => 'Trip vehicle';
+
+  @override
+  String get selectVehicleForRoute => 'Select the vehicle for the carpool';
+
+  @override
+  String get noVehiclesForRoute =>
+      'You have no vehicles. Publish one first to offer carpool.';
+
+  @override
+  String get vehiclesLoadError => 'Could not load your vehicles';
+
+  @override
   String get reputationThreshold => 'Minimum reputation threshold';
 
   @override

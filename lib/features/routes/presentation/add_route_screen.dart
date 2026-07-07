@@ -7,6 +7,7 @@ import 'package:wheelspe_provider/core/constants/app_text_styles.dart';
 import 'package:wheelspe_provider/core/utils/currency_formatter.dart';
 import 'package:wheelspe_provider/core/utils/date_formatter.dart';
 import 'package:wheelspe_provider/core/utils/validators.dart';
+import 'package:wheelspe_provider/features/fleet/presentation/fleet_providers.dart';
 import 'package:wheelspe_provider/features/routes/presentation/routes_providers.dart';
 import 'package:wheelspe_provider/l10n/generated/app_localizations.dart';
 import 'package:wheelspe_provider/shared/providers/user_provider.dart';
@@ -33,6 +34,8 @@ class _AddRouteScreenState extends ConsumerState<AddRouteScreen> {
   int _seats = 3;
   bool _womenOnly = false;
   bool _publishing = false;
+  // Vehículo con el que se realiza el carpool (obligatorio).
+  String? _vehicleId;
 
   // US17: recurrencia semanal.
   bool _recurring = false;
@@ -77,6 +80,10 @@ class _AddRouteScreenState extends ConsumerState<AddRouteScreen> {
 
   Future<void> _publish() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_vehicleId == null) {
+      showInfoSnackBar(context, AppLocalizations.of(context).selectVehicleForRoute);
+      return;
+    }
     if (_recurring && _weekdays.isEmpty) {
       showInfoSnackBar(context, AppLocalizations.of(context).pickAtLeastOneDay);
       return;
@@ -111,6 +118,7 @@ class _AddRouteScreenState extends ConsumerState<AddRouteScreen> {
           pricePerSeat: price,
           weekdays: _weekdays,
           weeks: _weeks,
+          vehicleId: _vehicleId,
           institutionalFilter: institutional,
           womenOnly: _womenOnly,
           notes: _notesController.text.trim(),
@@ -133,6 +141,7 @@ class _AddRouteScreenState extends ConsumerState<AddRouteScreen> {
         departureTime: departureTime,
         availableSeats: _seats,
         pricePerSeat: price,
+        vehicleId: _vehicleId,
         institutionalFilter: institutional,
         womenOnly: _womenOnly,
         notes: _notesController.text.trim(),
@@ -194,6 +203,14 @@ class _AddRouteScreenState extends ConsumerState<AddRouteScreen> {
                 ),
                 const SizedBox(height: 16),
               ],
+              // Vehículo del carpool (obligatorio).
+              Text(l10n.vehicleForRoute, style: AppTextStyles.subtitle),
+              const SizedBox(height: 8),
+              _VehiclePicker(
+                selectedId: _vehicleId,
+                onSelected: (id) => setState(() => _vehicleId = id),
+              ),
+              const SizedBox(height: 16),
               WheelsPeTextField(
                 controller: _originController,
                 label: l10n.origin,
@@ -397,6 +414,84 @@ class _WeekdaySelector extends StatelessWidget {
             onSelected: (_) => onToggle(wd),
           ),
       ],
+    );
+  }
+}
+
+/// Selector del vehículo con el que se ofrece el carpool. Lista los autos del
+/// proveedor autenticado.
+class _VehiclePicker extends ConsumerWidget {
+  final String? selectedId;
+  final ValueChanged<String?> onSelected;
+
+  const _VehiclePicker({required this.selectedId, required this.onSelected});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final vehiclesAsync = ref.watch(myVehiclesProvider);
+
+    return vehiclesAsync.when(
+      loading: () => const _PickerBox(child: LinearProgressIndicator()),
+      error: (_, _) => _PickerBox(
+        child:
+            Text(l10n.vehiclesLoadError, style: AppTextStyles.bodySecondary),
+      ),
+      data: (vehicles) {
+        if (vehicles.isEmpty) {
+          return _PickerBox(
+            child: Text(l10n.noVehiclesForRoute,
+                style: AppTextStyles.bodySecondary),
+          );
+        }
+        // Si el id seleccionado ya no existe, se limpia.
+        final validId =
+            vehicles.any((v) => v.id == selectedId) ? selectedId : null;
+        return _PickerBox(
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: validId,
+              isExpanded: true,
+              hint: Text(l10n.vehicleForRoute,
+                  style: AppTextStyles.bodySecondary),
+              icon: const Icon(Icons.directions_car_outlined,
+                  color: AppColors.textSecondary),
+              dropdownColor: AppColors.surfaceElevated,
+              items: [
+                for (final v in vehicles)
+                  DropdownMenuItem(
+                    value: v.id,
+                    child: Text(
+                      '${v.displayName} · ${v.plate}',
+                      style: AppTextStyles.body,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+              ],
+              onChanged: onSelected,
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _PickerBox extends StatelessWidget {
+  final Widget child;
+
+  const _PickerBox({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceElevated,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.divider),
+      ),
+      child: child,
     );
   }
 }

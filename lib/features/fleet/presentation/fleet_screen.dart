@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:wheelspe_provider/core/constants/app_colors.dart';
 import 'package:wheelspe_provider/core/constants/app_text_styles.dart';
 import 'package:wheelspe_provider/core/utils/currency_formatter.dart';
+import 'package:wheelspe_provider/features/fleet/data/reservation_model.dart';
 import 'package:wheelspe_provider/features/fleet/data/vehicle_model.dart';
 import 'package:wheelspe_provider/features/fleet/presentation/fleet_providers.dart';
 import 'package:wheelspe_provider/l10n/generated/app_localizations.dart';
@@ -79,6 +80,31 @@ class _VehicleCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
 
+    // El backend no devuelve estadísticas por vehículo (llegan en 0), así que
+    // se calculan en cliente desde las reservas del proveedor de este mes.
+    final reservations =
+        ref.watch(ownerReservationsProvider).valueOrNull ?? const [];
+    final now = DateTime.now();
+    bool sameMonth(DateTime? d) =>
+        d != null && d.year == now.year && d.month == now.month;
+    final mine = reservations.where((r) => r.vehicleId == vehicle.id);
+    final computedReservations = mine
+        .where((r) =>
+            r.status != ReservationStatus.cancelled &&
+            sameMonth(r.createdAt ?? r.startDate))
+        .length;
+    final computedEarnings = mine
+        .where((r) =>
+            r.status == ReservationStatus.completed &&
+            sameMonth(r.completedAt ?? r.startDate))
+        .fold<double>(0, (sum, r) => sum + r.totalAmount);
+    // Si algún día el backend sí devuelve los agregados, se prefieren.
+    final monthReservations = vehicle.monthReservations > 0
+        ? vehicle.monthReservations
+        : computedReservations;
+    final monthEarnings =
+        vehicle.monthEarnings > 0 ? vehicle.monthEarnings : computedEarnings;
+
     return WheelsPeCard(
       padding: EdgeInsets.zero,
       semanticsLabel: '${vehicle.displayName}, ${_statusLabel(l10n)}',
@@ -137,10 +163,8 @@ class _VehicleCard extends ConsumerWidget {
                     Expanded(
                       child: Text(
                         l10n.vehicleStats(
-                          vehicle.monthReservations,
-                          CurrencyFormatter.formatCompact(
-                            vehicle.monthEarnings,
-                          ),
+                          monthReservations,
+                          CurrencyFormatter.formatCompact(monthEarnings),
                         ),
                         style: AppTextStyles.caption,
                       ),

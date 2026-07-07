@@ -314,8 +314,8 @@ class _ReservationDetailBodyState
         ];
       case ReservationStatus.confirmed:
         return [
-          // Ayuda de demo: el PIN que el arrendatario ve en su app. En
-          // producción este texto vive en la app Renter, no aquí.
+          // El PIN lo genera y muestra ÚNICAMENTE la app Renter (arrendatario).
+          // Aquí el proveedor solo lo pide y lo valida al registrar la entrega.
           WheelsPeCard(
             child: Row(
               children: [
@@ -323,7 +323,7 @@ class _ReservationDetailBodyState
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    l10n.tripPinShare(TripPin.forRental(reservation.id)),
+                    l10n.tripPinAsk,
                     style: AppTextStyles.caption,
                   ),
                 ),

@@ -25,6 +25,7 @@ class RoutesRepositoryImpl implements RoutesRepository {
     required String departureTime,
     required int availableSeats,
     required double pricePerSeat,
+    String? vehicleId,
     bool institutionalFilter = false,
     bool womenOnly = false,
     String notes = '',
@@ -48,6 +49,8 @@ class RoutesRepositoryImpl implements RoutesRepository {
         'seatsAvailable': availableSeats,
         'pricePerSeat': pricePerSeat,
         'onlyWomen': womenOnly,
+        if (vehicleId != null && vehicleId.isNotEmpty)
+          'vehicleId': int.tryParse(vehicleId) ?? vehicleId,
         if (institutionalFilter) 'community': 'UPC',
       });
 
@@ -62,6 +65,7 @@ class RoutesRepositoryImpl implements RoutesRepository {
     required double pricePerSeat,
     required Set<int> weekdays,
     required int weeks,
+    String? vehicleId,
     bool institutionalFilter = false,
     bool womenOnly = false,
     String notes = '',
@@ -82,6 +86,7 @@ class RoutesRepositoryImpl implements RoutesRepository {
           departureTime: departureTime,
           availableSeats: availableSeats,
           pricePerSeat: pricePerSeat,
+          vehicleId: vehicleId,
           institutionalFilter: institutionalFilter,
           womenOnly: womenOnly,
           notes: notes,

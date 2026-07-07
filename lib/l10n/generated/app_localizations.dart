@@ -1922,6 +1922,36 @@ abstract class AppLocalizations {
   /// **'PIN de entrega: {pin}. Compártelo con el proveedor al recibir el vehículo.'**
   String tripPinShare(String pin);
 
+  /// No description provided for @tripPinAsk.
+  ///
+  /// In es, this message translates to:
+  /// **'Pídele al arrendatario el PIN de entrega que aparece en su app para validar la entrega.'**
+  String get tripPinAsk;
+
+  /// No description provided for @vehicleForRoute.
+  ///
+  /// In es, this message translates to:
+  /// **'Vehículo del viaje'**
+  String get vehicleForRoute;
+
+  /// No description provided for @selectVehicleForRoute.
+  ///
+  /// In es, this message translates to:
+  /// **'Selecciona el vehículo para el carpool'**
+  String get selectVehicleForRoute;
+
+  /// No description provided for @noVehiclesForRoute.
+  ///
+  /// In es, this message translates to:
+  /// **'No tienes vehículos. Publica uno primero para ofrecer carpool.'**
+  String get noVehiclesForRoute;
+
+  /// No description provided for @vehiclesLoadError.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudieron cargar tus vehículos'**
+  String get vehiclesLoadError;
+
   /// No description provided for @reputationThreshold.
   ///
   /// In es, this message translates to:
