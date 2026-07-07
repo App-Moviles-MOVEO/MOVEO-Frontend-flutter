@@ -309,6 +309,15 @@ void main() {
       // Distinto rental → distinto PIN (casi siempre).
       expect(TripPin.forRental('42') == TripPin.forRental('43'), isFalse);
     });
+
+    test('normaliza el formato del id (mismo PIN entre apps)', () {
+      // El id del mismo alquiler puede llegar como "123", "123.0" o con
+      // espacios según cómo lo serialice cada app; el PIN debe ser el mismo.
+      final base = TripPin.forRental('123');
+      expect(TripPin.forRental('123.0'), base);
+      expect(TripPin.forRental(' 123 '), base);
+      expect(TripPin.validate('123.0', TripPin.forRental('123')), isTrue);
+    });
   });
 
   group('WalletBalance / RefundResult', () {

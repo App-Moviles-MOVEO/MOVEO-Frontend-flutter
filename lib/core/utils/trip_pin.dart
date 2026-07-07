@@ -10,13 +10,24 @@
 class TripPin {
   TripPin._();
 
+  /// Normaliza el id para que ambas apps deriven el MISMO PIN aunque el
+  /// backend/serializador entregue el id con distinto formato. Ej.: Flutter
+  /// puede decodificar `123` como `double` → "123.0" y Android como `Int` →
+  /// "123"; sin normalizar darían PINs distintos. Se reduce a la parte entera
+  /// (o al texto sin espacios si no es numérico).
+  static String _normalize(String rentalId) {
+    final trimmed = rentalId.trim();
+    final number = num.tryParse(trimmed);
+    return number != null ? number.toInt().toString() : trimmed;
+  }
+
   /// PIN de 4 dígitos (0000–9999) estable para un mismo [rentalId].
   static String forRental(String rentalId) {
-    // Hash tipo FNV-1a de 32 bits sobre "wpe:{id}" para un valor estable
+    // Hash tipo FNV-1a de 32 bits sobre "wpe-trip:{id}" para un valor estable
     // y bien distribuido, luego lo llevamos a 4 dígitos.
     const seed = 'wpe-trip:';
     var hash = 0x811c9dc5;
-    for (final code in '$seed$rentalId'.codeUnits) {
+    for (final code in '$seed${_normalize(rentalId)}'.codeUnits) {
       hash ^= code;
       hash = (hash * 0x01000193) & 0xFFFFFFFF;
     }
